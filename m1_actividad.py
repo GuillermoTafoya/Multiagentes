@@ -33,5 +33,3 @@ m = 5
 n = 5
 
 # Número de
-
-print("pene")
