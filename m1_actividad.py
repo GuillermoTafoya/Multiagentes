@@ -34,4 +34,46 @@ n = 5
 
 # Número de
 
-print("pene")
+
+
+class cleanAgent(Agent):
+    def __init__(self,unique_id,x,bateria,model):
+        super().__init__(unique_id, model)
+        self.next_state = None
+        self.bateria = bateria
+    def advance(self):
+        """
+        Define el nuevo estado calculado del método step.
+        """
+        self.live = self.next_state
+    def step(self,board):
+        # Get current cell
+        current_cell = self.model.grid.get_cell_list_contents([self.pos])[0]
+        # If current cell is dirty, clean it
+        if current_cell.next_state:
+            self.clean(current_cell)
+            self.next_state = self.next_state
+            return True
+        # If current cell is clean, move to a random neighbour
+        else:
+            self.move(board)
+            self.next_state = False
+            return True
+    def clean(self,cell):
+        cell.next_state = False
+        self.next_state = False
+        return True
+    def move(self,board):
+        neighbours = self.model.grid.get_neighbors(
+            self.pos,
+            moore=True,
+            include_center=False)
+        random.shuffle(neighbours)
+        self.pos = neighbours[0]
+class cell(Agent):
+    def __init__(self,unique_id,model,state):
+        super().__init__(unique_id, model)
+        self.next_state = None
+        self.pos = unique_id
+        self.state = state
+class Board(Model):
