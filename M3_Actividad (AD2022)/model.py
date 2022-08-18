@@ -72,11 +72,11 @@ class Cell(Agent):
         super().__init__(unique_id, model)
         self.next_state = None
         self.pos = unique_id
+        # 1 for transitable, 0 for non-transitable
         self.state = state
 class Board(Model):
     def __init__(self,m,n,num_agentes,p_sucias):
         self.num_agentes = num_agentes
-        self.p_sucias = p_sucias
         self.schedule = SimultaneousActivation(self)
         self.grid = MultiGrid(m,n,False) # Bool defines toroidal boundary
         num_celdas_sucias = int(m*n*p_sucias)
