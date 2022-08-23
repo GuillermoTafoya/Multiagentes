@@ -37,7 +37,7 @@ class Car(Agent):
         Defines a new state calculating the step of the model
         """
         neighbours = self.model.grid.get_neighbors(
-        self.pos, 
+        self.pos,
         moore = True,
         include_center = True)
         for neighbour in neighbours:
@@ -50,7 +50,7 @@ class Car(Agent):
                 # stop
                 return
         self.model.grid.move_agent(self, self.next_state)
-        
+
     def opositeDirections(self, direction1, direction2):
         if direction1 == 'up' and direction2 == 'down':
             return True
