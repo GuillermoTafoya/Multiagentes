@@ -49,8 +49,8 @@ class Car(Agent):
             if isinstance(neighbour, TrafficLight) and neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                 # stop
                 return
-        self.model.grid.move_agent(self, self.next_state)
-        
+        #self.model.grid.move_agent(self, self.next_state)
+
     def opositeDirections(self, direction1, direction2):
         if direction1 == 'up' and direction2 == 'down':
             return True
@@ -66,6 +66,21 @@ class Car(Agent):
         """
         Defines how the model interacts within its environment.
         """
+        # Check if the agent is alive
+        if not self.alive:
+            del self
+            return
+        # Look for traffic lights
+        neighbours = self.model.grid.get_neighbors(
+            self.pos,
+            moore=True,
+            include_center=True)
+        for neighbour in neighbours:
+            if isinstance(neighbour, TrafficLight):
+                if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
+                    # stop
+                    return
+            self.advance()
         next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
         if self.model.grid.out_of_bounds(next_pos):
             self.next_pos = self.model.grid.torus_adj(next_pos)
