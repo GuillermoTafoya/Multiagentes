@@ -30,8 +30,6 @@ class Car(Agent):
             return
         raise(ValueError('Invalid direction'))
 
-# ......... more code ............
-
     def advance(self) -> None:
         """
         Defines a new state calculating the step of the model
@@ -80,27 +78,26 @@ class Car(Agent):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
                     return
-            self.advance()
+        # Move
         next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
         if self.model.grid.out_of_bounds(next_pos):
             self.next_pos = self.model.grid.torus_adj(next_pos)
         else:
             self.next_pos = next_pos
 
-        # ......... more code ............
-
 class TrafficLight(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
-    def __init__(self, unique_id, model, state = False, timeToChange = 10):
+    def __init__(self, unique_id, model, state = False, timeToChange = 10, direction = None):
         super().__init__(unique_id, model)
         self.state = state
         self.timeToChange = timeToChange
+        self.direction = direction
 
     def step(self):
-        # if self.model.schedule.steps % self.timeToChange == 0:
-        #     self.state = not self.state
+        if self.model.schedule.steps % self.timeToChange == 0:
+            self.state = not self.state
         pass
 class Road(Agent):
     """

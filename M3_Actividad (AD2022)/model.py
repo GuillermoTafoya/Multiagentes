@@ -13,6 +13,8 @@ import time
 import datetime
 import random
 
+from agents import Car, TrafficLight, Road
+
 def get_grid(model):
     grid = np.zeros((model.grid.width, model.grid.height))
 
