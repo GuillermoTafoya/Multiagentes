@@ -103,9 +103,8 @@ class Road(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
-    def __init__(self, unique_id, model, direction= "Left"):
+    def __init__(self, unique_id, model, colour = None):
         super().__init__(unique_id, model)
-        self.direction = direction
-
+        self.colour = colour if colour else "olive"
     def step(self):
         pass
