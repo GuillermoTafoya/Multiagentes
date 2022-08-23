@@ -1,4 +1,4 @@
-from mesa import Agent, Model 
+from mesa import Agent, Model
 from mesa.space import MultiGrid
 from mesa.time import SimultaneousActivation
 from mesa.datacollection import DataCollector
