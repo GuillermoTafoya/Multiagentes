@@ -79,9 +79,6 @@ class Car(Agent):
                 if self.next_pos == neighbour.next_pos:
                     self.alive = False
                     neighbour.alive = False
-                    #print("Collision:", self.pos, neighbour.pos)
-                    #print("Direction:", self.direction, neighbour.direction)
-                    #print("Me is neighbour:", self is neighbour)
                     return
 
         # Move
