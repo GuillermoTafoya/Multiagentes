@@ -6,8 +6,13 @@ class Car(Agent):
     def __init__(self, unique_id, model, colour=None, direction=None):
         super().__init__(unique_id, model)
         self.colour = colour
+        self.dx = 0
+        self.dy = 0
         self._direction = self.random.choice(self.DIRECTIONS) if not direction else direction
+        self.direction = self._direction
         self.alive = True
+        
+        self.next_pos = None
 
     @property
     def direction(self):
@@ -17,37 +22,18 @@ class Car(Agent):
     def direction(self, direction):
         self._direction = direction
         if self._direction == 'up':
-            self.dx, self.dy = -1, 0
-            return
-        if self._direction == 'down':
-            self.dx, self.dy = 1, 0
-            return
-        if self._direction == 'right':
             self.dx, self.dy = 0, 1
             return
-        if self._direction == 'left':
+        if self._direction == 'down':
             self.dx, self.dy = 0, -1
             return
+        if self._direction == 'right':
+            self.dx, self.dy = 1, 0
+            return
+        if self._direction == 'left':
+            self.dx, self.dy = -1, 0
+            return
         raise(ValueError('Invalid direction'))
-
-    def advance(self) -> None:
-        """
-        Defines a new state calculating the step of the model
-        """
-        neighbours = self.model.grid.get_neighbors(
-        self.pos,
-        moore = True,
-        include_center = True)
-        for neighbour in neighbours:
-            if isinstance(neighbour, Car) and self.pos == neighbour.pos:
-                # collision
-                neighbour.alive = False
-                self.alive = False
-                break
-            if isinstance(neighbour, TrafficLight) and neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
-                # stop
-                return
-        self.model.grid.move_agent(self, self.next_state)
 
     def opositeDirections(self, direction1, direction2):
         if direction1 == 'up' and direction2 == 'down':
@@ -65,25 +51,44 @@ class Car(Agent):
         Defines how the model interacts within its environment.
         """
         # Check if the agent is alive
-        if not self.alive:
+        if not self.alive:   
             del self
             return
+
         # Look for traffic lights
-        neighbours = self.model.grid.get_neighbors(
-            self.pos,
-            moore=True,
-            include_center=True)
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
+        
         for neighbour in neighbours:
+            
+            # Check collision with cars
+            if isinstance(neighbour, Car):
+                if self.pos == neighbour.pos:
+                    self.alive = False
+                    neighbour.alive = False
+                    del self
+                    del neighbour
+                    return
+            
             if isinstance(neighbour, TrafficLight):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
-                    return
+                    if (self.direction == 'up' or self.direction == 'down') and abs(neighbour.pos[1] - self.pos[1]) == 1:
+                        return
+                    if (self.direction == 'right' or self.direction == 'left') and abs(neighbour.pos[0] - self.pos[0]) == 1:
+                        return
+            # Try stopping if there is another car in the way
+            if isinstance(neighbour, Car):
+                if (self.direction == 'up' or self.direction == 'down') and abs(neighbour.pos[1] - self.pos[1]) == 1:
+                    if neighbour.pos[1] == self.pos[1] and neighbour.direction == self.direction:
+                        return
+                elif (self.direction == 'right' or self.direction == 'left') and abs(neighbour.pos[0] - self.pos[0]) == 1:
+                    if neighbour.pos[0] == self.pos[0] and neighbour.direction == self.direction:
+                        return
+
         # Move
         next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
-        if self.model.grid.out_of_bounds(next_pos):
-            self.next_pos = self.model.grid.torus_adj(next_pos)
-        else:
-            self.next_pos = next_pos
+        self.next_pos = next_pos
+        self.model.grid.move_agent(self, next_pos)
 
 class TrafficLight(Agent):
     """
@@ -98,7 +103,7 @@ class TrafficLight(Agent):
     def step(self):
         if self.model.schedule.steps % self.timeToChange == 0:
             self.state = not self.state
-        pass
+
 class Road(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
