@@ -12,7 +12,7 @@ class Car(Agent):
         self.direction = self._direction
         self.alive = True
         
-        self.next_pos = None
+        self.next_pos = unique_id
 
     @property
     def direction(self):
@@ -51,24 +51,13 @@ class Car(Agent):
         Defines how the model interacts within its environment.
         """
         # Check if the agent is alive
-        if not self.alive:   
-            del self
+        if not self.alive:
             return
 
-        # Look for traffic lights
-        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=max(self.model.width, self.model.height))
         
         for neighbour in neighbours:
-            
-            # Check collision with cars
-            if isinstance(neighbour, Car):
-                if self.pos == neighbour.pos:
-                    self.alive = False
-                    neighbour.alive = False
-                    del self
-                    del neighbour
-                    return
-            
+
             if isinstance(neighbour, TrafficLight):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
@@ -84,6 +73,16 @@ class Car(Agent):
                 elif (self.direction == 'right' or self.direction == 'left') and abs(neighbour.pos[0] - self.pos[0]) == 1:
                     if neighbour.pos[0] == self.pos[0] and neighbour.direction == self.direction:
                         return
+
+            # Check collision with cars
+            if isinstance(neighbour, Car) and not (self is neighbour):
+                if self.next_pos == neighbour.next_pos:
+                    self.alive = False
+                    neighbour.alive = False
+                    #print("Collision:", self.pos, neighbour.pos)
+                    #print("Direction:", self.direction, neighbour.direction)
+                    #print("Me is neighbour:", self is neighbour)
+                    return
 
         # Move
         next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)

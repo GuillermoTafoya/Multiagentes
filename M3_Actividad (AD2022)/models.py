@@ -26,6 +26,9 @@ def get_grid(model):
         for agent in cell_content:
             #print(agent, x, y)
             if isinstance(agent, Car):
+                if not agent.alive:
+                    del agent
+                    continue
                 if agent.colour == 'white':
                     grid[x][y] = 6
                 elif agent.colour == 'blue':
@@ -107,7 +110,7 @@ class Board(Model):
         trafficLight = TrafficLight(self.N + 1, self, direction = "left")
         self.grid.place_agent(trafficLight, (self.width // 3, self.height // 3 * 2))
         self.schedule.add(trafficLight)
-        
+
         trafficLight = TrafficLight(self.N + 2, self, direction = "down")
         self.grid.place_agent(trafficLight, (self.width // 3 * 2, self.height // 3))
         self.schedule.add(trafficLight)
