@@ -26,9 +26,16 @@ def get_grid(model):
         for agent in cell_content:
             #print(agent, x, y)
             if isinstance(agent, Car):
+                """
+                # Delete car if it is out of the grid
+                if (agent.direction == "left" and x >= model.grid.width-2) or (agent.direction == "right" and x < 2) or (agent.direction == "up" and 2) or (agent.direction == "down" and y >= model.grid.height-2):
+                    del agent
+                    continue
+                # Delete car if it is not alive
                 if not agent.alive:
                     del agent
                     continue
+                """
                 if agent.colour == 'white':
                     grid[x][y] = 6
                 elif agent.colour == 'blue':
@@ -60,28 +67,53 @@ def get_grid(model):
 
 
 class Board(Model):
-    def __init__(self, width, height, N, seed=None):
+    def __init__(self, width, height, N, seed=None, spawn_rate = 1):
         self.width = width
         self.height = height
-        self.grid = MultiGrid(width, height, torus=True)
+        self.grid = MultiGrid(width, height, torus=False)
         self.schedule = SimultaneousActivation(self)
         self.running = True
         self.datacollector = DataCollector(
             model_reporters={"Grid": get_grid})
         random.seed(seed if seed is not None else time.time())
         self.N = N
+        self.carID = 2
+        self.spawn_rate = spawn_rate
         self.create_agents()
+
     
     def step(self):
+        
+        
+        
+        if self.schedule.steps % self.spawn_rate == 0:
+            self.spawn_random_car()
         self.datacollector.collect(self)
         self.schedule.step()
+        # Delete car if it is not alive
+        for agent in self.schedule.agents:
+            if isinstance(agent, Car) and not agent.alive:
+                self.schedule.remove(agent)
+                self.grid.remove_agent(agent)
+                del agent
+
+    def spawn_random_car(self):
+        direction = random.choice(["down", "right"])
+        car = Car(self.carID, self, direction = direction, colour = 'white' if direction == 'down' else 'blue')
+        self.carID += 1
+        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else random.randint(0, 1)
+        y = random.randint(0, 1) if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
+        # Check if there is a car in the spawn position
+        if self.grid.is_cell_empty((x, y)):
+            self.grid.place_agent(car, (x, y))
+            self.schedule.add(car)
+        else:
+            del car
 
     def create_agents(self):
-        CarsId = 0
-        TrafficLightsId = self.N+1
         # Create roads
         # Makes a crossroad
-        for (content,x,y) in self.grid.coord_iter():
+        for (_,x,y) in self.grid.coord_iter():
             if x < self.width // 3 or x > self.width * 2 // 3:
                 if y < self.height // 3 or y > self.height * 2 // 3:
                 #print("1. Added road at", x, y)
@@ -89,6 +121,7 @@ class Board(Model):
                     self.grid.place_agent(road, (x, y))
                     self.schedule.add(road)
 
+            """
             # Create cars on the sides of the crossroad             
             if CarsId < self.N:
                 # Cars going up
@@ -105,13 +138,14 @@ class Board(Model):
                     self.grid.place_agent(car, (x, y))
                     self.schedule.add(car)
                     CarsId += 1
+            """
         # Create traffic lights
         # Only two traffic lights, one from up to down and one from right to left
-        trafficLight = TrafficLight(self.N + 1, self, direction = "left")
+        trafficLight = TrafficLight(0, self, state=False, timeToChange=self.width, direction = "left", delay = self.height)
         self.grid.place_agent(trafficLight, (self.width // 3, self.height // 3 * 2))
         self.schedule.add(trafficLight)
 
-        trafficLight = TrafficLight(self.N + 2, self, direction = "down")
+        trafficLight = TrafficLight(1, self, state=True, timeToChange=self.height, direction = "up", delay = self.width)
         self.grid.place_agent(trafficLight, (self.width // 3 * 2, self.height // 3))
         self.schedule.add(trafficLight)
 
