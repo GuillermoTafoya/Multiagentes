@@ -141,11 +141,11 @@ class Board(Model):
             """
         # Create traffic lights
         # Only two traffic lights, one from up to down and one from right to left
-        trafficLight = TrafficLight(0, self, timeToChange=self.width // 3, direction = "left")
+        trafficLight = TrafficLight(0, self, state=False, timeToChange=self.width, direction = "left", delay = self.height)
         self.grid.place_agent(trafficLight, (self.width // 3, self.height // 3 * 2))
         self.schedule.add(trafficLight)
 
-        trafficLight = TrafficLight(1, self, timeToChange=self.height // 3, direction = "up")
+        trafficLight = TrafficLight(1, self, state=True, timeToChange=self.height, direction = "up", delay = self.width)
         self.grid.place_agent(trafficLight, (self.width // 3 * 2, self.height // 3))
         self.schedule.add(trafficLight)
 
