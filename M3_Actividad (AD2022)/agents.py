@@ -22,16 +22,16 @@ class Car(Agent):
     def direction(self, direction):
         self._direction = direction
         if self._direction == 'up':
-            self.dx, self.dy = 0, 1
-            return
-        if self._direction == 'down':
             self.dx, self.dy = 0, -1
             return
+        if self._direction == 'down':
+            self.dx, self.dy = 0, 1
+            return
         if self._direction == 'right':
-            self.dx, self.dy = 1, 0
+            self.dx, self.dy = 1,0
             return
         if self._direction == 'left':
-            self.dx, self.dy = -1, 0
+            self.dx, self.dy = -1,0
             return
         raise(ValueError('Invalid direction'))
 
@@ -61,9 +61,13 @@ class Car(Agent):
             if isinstance(neighbour, TrafficLight):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
-                    if (self.direction == 'up' or self.direction == 'down') and abs(neighbour.pos[1] - self.pos[1]) == 1:
+                    if (self.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
                         return
-                    if (self.direction == 'right' or self.direction == 'left') and abs(neighbour.pos[0] - self.pos[0]) == 1:
+                    if (self.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1:
+                        return
+                    if (self.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1:
+                        return
+                    if (self.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
                         return
             # Try stopping if there is another car in the way
             if isinstance(neighbour, Car):
@@ -83,6 +87,9 @@ class Car(Agent):
 
         # Move
         next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
+        if self.model.grid.out_of_bounds(next_pos):
+            self.alive = False
+            return
         self.next_pos = next_pos
         self.model.grid.move_agent(self, next_pos)
 
