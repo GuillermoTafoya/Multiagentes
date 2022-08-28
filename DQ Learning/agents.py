@@ -1,5 +1,4 @@
 from mesa import Agent
-import DQN_only_agent from IA_Trafficlight
 
 class Car(Agent):
     DIRECTIONS = ['right', 'down', 'left', 'up']
@@ -12,7 +11,8 @@ class Car(Agent):
         self._direction = self.random.choice(self.DIRECTIONS) if not direction else direction
         self.direction = self._direction
         self.alive = True
-        
+        self.successful_trip = False
+        self.stopped = False
         self.next_pos = unique_id
 
     @property
@@ -51,11 +51,16 @@ class Car(Agent):
         """
         Defines how the model interacts within its environment.
         """
+        
         # Check if the agent is alive
         if not self.alive:
             return
-
-        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=max(self.model.width, self.model.height))
+        
+        # Move
+        next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
+        
+        
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
         
         for neighbour in neighbours:
 
@@ -63,20 +68,19 @@ class Car(Agent):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
                     if (self.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
+                        self.stopped = True
                         return
                     if (self.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1:
+                        self.stopped = True
                         return
                     if (self.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1:
+                        self.stopped = True
                         return
                     if (self.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
+                        self.stopped = True
                         return
             # Try stopping if there is another car in the way
             if isinstance(neighbour, Car):
-                # Check collision with cars
-                if self.pos == neighbour.pos:
-                    self.alive = False
-                    neighbour.alive = False
-                    return
                 if (self.direction == neighbour.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
                     if neighbour.pos[0] == self.pos[0]:
                         return
@@ -89,11 +93,16 @@ class Car(Agent):
                 elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
                     if neighbour.pos[1] == self.pos[1]:
                         return
-    
-
-        # Move
-        next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
+                
+                # Check collision with cars
+                if self.next_pos == neighbour.next_pos and neighbour is not self and neighbour.stopped == self.stopped == False:
+                    self.alive = False
+                    neighbour.alive = False
+                    return
+        
+        self.stopped = False
         if self.model.grid.out_of_bounds(next_pos):
+            self.successful_trip = True
             self.alive = False
             return
         self.next_pos = next_pos
@@ -103,18 +112,30 @@ class TrafficLight(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
-    def __init__(self, unique_id, model, state = True, direction = None):
+    def __init__(self, unique_id, model, state = True, timeToChange = 10, direction = None, delay = 0):
         super().__init__(unique_id, model)
         self.state = state
+        self.timeToChange = timeToChange
+        self._timeToChange = timeToChange
         self.direction = direction
+        self._delay = delay
+        self.delay = 0
 
     def step(self):
-        self.state = self.makeDecision()
-
-    def makeDecision(self):
-        return DQN_only_agent.makeDecision(self)
-
-
+        if self.state and self.delay < self._delay:
+            self.delay += 1
+            return
+        if self.state and self.delay >= self._delay:
+            self._delay = 0
+            self.timeToChange -= 1
+            if self.timeToChange == 0:
+                self.state = False
+                self.timeToChange = self._timeToChange
+        else:
+            self.timeToChange -= 1
+            if self.timeToChange == 0:
+                self.state = True
+                self.timeToChange = self._timeToChange
         
 
 class Road(Agent):
