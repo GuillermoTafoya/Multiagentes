@@ -3,14 +3,61 @@ import torch as torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import os
+from collections import deque
 import random
+import math
+from models import Board
 
 
-import numpy as np
+class Linear_QNet(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.linear1 = nn.Linear(input_size, hidden_size)
+        self.linear2 = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        x = F.relu(self.linear1(x))
+        x = self.linear2(x)
+        return x
+
+    def save(self, file_name='model_name.pth'):
+        model_folder_path = 'Path'
+        file_name = os.path.join(model_folder_path, file_name)
+        torch.save(self.state_dict(), file_name)
+
+"""
+class DQN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(9, 24)
+        self.fc2 = nn.Linear(24, 48)
+        self.fc3 = nn.Linear(48, 9)
+
+    def forward(self, x):        
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
+        return x
+"""
+# Get state from environment, of the traffic lights
+def get_state(self, game, agent):
+    pos = agent.pos
+    state = [
+        
+
+
+
+    
+    ]
+    return np.array(state, dtype=int)
+
 class DQN_only_agent:
     def __init__(self, n_episodes=1000, n_wins_objective=195, max_env_steps=None, gamma=1.0, epsilon=1.0,
-                 epsilon_min=0.01, epsilon_log_decay=0.995, alpha=0.01, alpha_decay=0.01, 
-                 batch_size=64, quiet=False,saveweights=True):
+                    epsilon_min=0.01, epsilon_log_decay=0.995, alpha=0.01, alpha_decay=0.01, 
+                    batch_size=64, quiet=False, saveweights=True):
         
         self.memory = deque(maxlen=100000)
         

@@ -11,6 +11,7 @@ class Car(Agent):
         self._direction = self.random.choice(self.DIRECTIONS) if not direction else direction
         self.direction = self._direction
         self.alive = True
+        self.successful_trip = False
         
         self.next_pos = unique_id
 
@@ -50,11 +51,13 @@ class Car(Agent):
         """
         Defines how the model interacts within its environment.
         """
+        # Move
+        next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
         # Check if the agent is alive
         if not self.alive:
             return
 
-        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=max(self.model.width, self.model.height))
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
         
         for neighbour in neighbours:
 
@@ -71,11 +74,6 @@ class Car(Agent):
                         return
             # Try stopping if there is another car in the way
             if isinstance(neighbour, Car):
-                # Check collision with cars
-                if self.pos == neighbour.pos:
-                    self.alive = False
-                    neighbour.alive = False
-                    return
                 if (self.direction == neighbour.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
                     if neighbour.pos[0] == self.pos[0]:
                         return
@@ -88,11 +86,14 @@ class Car(Agent):
                 elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
                     if neighbour.pos[1] == self.pos[1]:
                         return
-    
-
-        # Move
-        next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
+                # Check collision with cars
+                if next_pos == neighbour.next_pos and neighbour is not self:
+                    self.alive = False
+                    neighbour.alive = False
+                    return
+        
         if self.model.grid.out_of_bounds(next_pos):
+            self.successful_trip = True
             self.alive = False
             return
         self.next_pos = next_pos

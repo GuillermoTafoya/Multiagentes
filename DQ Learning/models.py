@@ -18,6 +18,7 @@ from agents import Car, TrafficLight, Road
 
 
 def get_grid(model):
+
     grid = np.zeros((model.grid.width, model.grid.height))
 
     #Por todas las celdas del grid
@@ -29,23 +30,18 @@ def get_grid(model):
             if isinstance(agent, Car):
                 json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}},'
                 if agent.colour == 'white':
-                    grid[x][y] = 6
+                    grid[x][y] = 5
                 elif agent.colour == 'blue':
-                    grid[x][y] = 7
+                    grid[x][y] = 4
             
             elif isinstance(agent, TrafficLight):
                 if agent.state == True: # Red
-                    grid[x][y] = 2
+                    grid[x][y] = 3
                 else: # Green
-                    grid[x][y] = 1
+                    grid[x][y] = 2
 
             elif isinstance(agent, Road):
-                if agent.colour == "brown":
-                    grid[x][y] = 3
-                elif agent.colour == 'olive':
-                    grid[x][y] = 4
-                else: # dark green
-                    grid[x][y] = 5
+                grid[x][y] = 1
             
             else: # Street
                 grid[x][y] = 0

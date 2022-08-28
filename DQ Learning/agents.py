@@ -1,4 +1,5 @@
 from mesa import Agent
+import DQN_only_agent from IA_Trafficlight
 
 class Car(Agent):
     DIRECTIONS = ['right', 'down', 'left', 'up']
@@ -102,30 +103,18 @@ class TrafficLight(Agent):
     """
     Obstacle agent. Just to add obstacles to the grid.
     """
-    def __init__(self, unique_id, model, state = True, timeToChange = 10, direction = None, delay = 0):
+    def __init__(self, unique_id, model, state = True, direction = None):
         super().__init__(unique_id, model)
         self.state = state
-        self.timeToChange = timeToChange
-        self._timeToChange = timeToChange
         self.direction = direction
-        self._delay = delay
-        self.delay = 0
 
     def step(self):
-        if self.state and self.delay < self._delay:
-            self.delay += 1
-            return
-        if self.state and self.delay >= self._delay:
-            self._delay = 0
-            self.timeToChange -= 1
-            if self.timeToChange == 0:
-                self.state = False
-                self.timeToChange = self._timeToChange
-        else:
-            self.timeToChange -= 1
-            if self.timeToChange == 0:
-                self.state = True
-                self.timeToChange = self._timeToChange
+        self.state = self.makeDecision()
+
+    def makeDecision(self):
+        return DQN_only_agent.makeDecision(self)
+
+
         
 
 class Road(Agent):

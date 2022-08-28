@@ -57,7 +57,7 @@ def get_grid(model):
 
 
 class Board(Model):
-    def __init__(self, width, height, N, seed=None, spawn_rate = 1):
+    def __init__(self, width, height, seed=None, spawn_rate = 1):
         self.width = width
         self.height = height
         self.grid = MultiGrid(width, height, torus=False)
@@ -66,15 +66,14 @@ class Board(Model):
         self.datacollector = DataCollector(
             model_reporters={"Grid": get_grid})
         random.seed(seed if seed is not None else time.time())
-        self.N = N
         self.carID = 2
         self.spawn_rate = spawn_rate
+        self.crashes = 0
+        self.successful_trips = 0
         self.create_agents()
 
     
     def step(self):
-        
-        
         
         if self.schedule.steps % self.spawn_rate == 0:
             self.spawn_random_car()
@@ -83,6 +82,10 @@ class Board(Model):
         # Delete car if it is not alive
         for agent in self.schedule.agents:
             if isinstance(agent, Car) and not agent.alive:
+                if agent.successful_trip:
+                    self.successful_trips += 1
+                else:
+                    self.crashes += 1
                 self.schedule.remove(agent)
                 self.grid.remove_agent(agent)
                 del agent
