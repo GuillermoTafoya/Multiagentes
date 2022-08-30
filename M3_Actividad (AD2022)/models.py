@@ -34,6 +34,7 @@ def get_grid(model):
                     grid[x][y] = 7
             
             elif isinstance(agent, TrafficLight):
+                json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state},"direction":"{agent.direction}"}},'
                 if agent.state == True: # Red
                     grid[x][y] = 2
                 else: # Green

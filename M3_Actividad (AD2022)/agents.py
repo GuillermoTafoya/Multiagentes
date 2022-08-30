@@ -93,17 +93,18 @@ class Car(Agent):
                 elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
                     if neighbour.pos[1] == self.pos[1]:
                         return
+                
                 """
                 # Check collision with cars
-                if self.pos == neighbour.pos and neighbour is not self and neighbour.stopped == False and self.stopped == False:
+                if self.next_pos == neighbour.next_pos and neighbour is not self and neighbour.stopped == self.stopped == False:
                     self.alive = False
                     neighbour.alive = False
                     return
-        """
+                """
+        
         self.stopped = False
         if self.model.grid.out_of_bounds(next_pos):
             self.successful_trip = True
-            self.alive = False
             return
         self.next_pos = next_pos
         self.model.grid.move_agent(self, next_pos)
