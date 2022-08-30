@@ -21,38 +21,26 @@ def get_grid(model):
     grid = np.zeros((model.grid.width, model.grid.height))
 
     #Por todas las celdas del grid
+    json = "{"
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
         for agent in cell_content:
-            #print(agent, x, y)
+            # Save relevant agents to json
             if isinstance(agent, Car):
-                """
-                # Delete car if it is out of the grid
-                if (agent.direction == "left" and x >= model.grid.width-2) or (agent.direction == "right" and x < 2) or (agent.direction == "up" and 2) or (agent.direction == "down" and y >= model.grid.height-2):
-                    del agent
-                    continue
-                # Delete car if it is not alive
-                if not agent.alive:
-                    del agent
-                    continue
-                """
+                json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}},'
                 if agent.colour == 'white':
                     grid[x][y] = 6
                 elif agent.colour == 'blue':
                     grid[x][y] = 7
-                elif agent.colour == 'purple':
-                    grid[x][y] = 8
-                else: # black
-                    grid[x][y] = 9
             
             elif isinstance(agent, TrafficLight):
-                if agent.state == True: # Green
+                json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state},"direction":"{agent.direction}"}},'
+                if agent.state == True: # Red
                     grid[x][y] = 2
-                else: # red
+                else: # Green
                     grid[x][y] = 1
 
             elif isinstance(agent, Road):
-                
                 if agent.colour == "brown":
                     grid[x][y] = 3
                 elif agent.colour == 'olive':
@@ -62,12 +50,15 @@ def get_grid(model):
             
             else: # Street
                 grid[x][y] = 0
-
+    json = json[:-1] + "}"
+    # Append json to file
+    with open("data.txt", "a") as file:
+        file.write(json + "\n")
     return grid
 
 
 class Board(Model):
-    def __init__(self, width, height, N, seed=None, spawn_rate = 1):
+    def __init__(self, width, height, seed=None, spawn_rate = 1):
         self.width = width
         self.height = height
         self.grid = MultiGrid(width, height, torus=False)
@@ -76,26 +67,47 @@ class Board(Model):
         self.datacollector = DataCollector(
             model_reporters={"Grid": get_grid})
         random.seed(seed if seed is not None else time.time())
-        self.N = N
         self.carID = 2
         self.spawn_rate = spawn_rate
+        self.crashes = 0
+        self.successful_trips = 0
         self.create_agents()
 
     
     def step(self):
         
-        
-        
         if self.schedule.steps % self.spawn_rate == 0:
             self.spawn_random_car()
+
+        
+
+
         self.datacollector.collect(self)
         self.schedule.step()
-        # Delete car if it is not alive
+        
+        # Check if there are cars that crashed (are in the same cell)
+        for cell in self.grid.coord_iter():
+            cell_content, x, y = cell
+            # Count cars in cell
+            cars = sum([1 for agent in cell_content if isinstance(agent, Car)])
+            if cars > 1:
+                self.crashes += 1
+                # Kill all cars in cell
+                for agent in cell_content:
+                    if isinstance(agent, Car):
+                        agent.alive = False
+                        self.schedule.remove(agent)
+                        self.grid.remove_agent(agent)
+                        del agent
+        # Check if there are cars that reached the destination
         for agent in self.schedule.agents:
-            if isinstance(agent, Car) and not agent.alive:
-                self.schedule.remove(agent)
-                self.grid.remove_agent(agent)
-                del agent
+            if isinstance(agent, Car):
+                if agent.successful_trip:
+                    self.successful_trips += 1
+                    self.schedule.remove(agent)
+                    self.grid.remove_agent(agent)
+                    del agent
+
 
     def spawn_random_car(self):
         direction = random.choice(["down", "right"])
