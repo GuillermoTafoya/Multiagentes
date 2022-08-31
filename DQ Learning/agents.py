@@ -13,6 +13,7 @@ class Car(Agent):
         self.alive = True
         self.successful_trip = False
         self.stopped = False
+        self.internalclock = model.schedule.steps
         self.next_pos = unique_id
 
     @property
@@ -51,6 +52,7 @@ class Car(Agent):
         """
         Defines how the model interacts within its environment.
         """
+        self.internalclock += 1
         
         # Check if the agent is alive
         if not self.alive:
@@ -94,13 +96,15 @@ class Car(Agent):
                     if neighbour.pos[1] == self.pos[1]:
                         return
                 
-                """
+                
                 # Check collision with cars
-                if self.next_pos == neighbour.next_pos and neighbour is not self and neighbour.stopped == self.stopped == False:
+                if next_pos == neighbour.next_pos and neighbour is not self and neighbour.stopped == self.stopped == False and neighbour.internalclock == self.internalclock:
+                    
                     self.alive = False
                     neighbour.alive = False
                     return
-                """
+                
+
         
         self.stopped = False
         if self.model.grid.out_of_bounds(next_pos):

@@ -79,36 +79,30 @@ class Board(Model):
         if self.schedule.steps % self.spawn_rate == 0:
             for _ in range(random.randint(1, self.max_spawn_batch)):
                 self.spawn_random_car()
+                
         
+
         self.schedule.step()
         self.datacollector.collect(self)
         
         # Check if there are cars that reached the destination
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
-
+                                        
                 if agent.successful_trip:
                     self.successful_trips += 1
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
                     del agent
                     continue
-
-                neighbours = self.grid.get_neighbors(agent.pos, moore=False, include_center=False)
-                for neighbour in neighbours:
-                    if isinstance(neighbour, Car):
-                        # Check collision with cars
-                        if agent.next_pos == neighbour.next_pos and neighbour is not agent and neighbour.stopped == agent.stopped == False:
-                            self.crashes += 1
-                            self.schedule.remove(agent)
-                            self.grid.remove_agent(agent)
-                            
-                            self.schedule.remove(neighbour)
-                            self.grid.remove_agent(neighbour)
-                            
-                            del agent
-                            del neighbour
-                            break
+                # Kill agents who are not alive
+                if not agent.alive:
+                        self.crashes += 1
+                        self.schedule.remove(agent)
+                        self.grid.remove_agent(agent)
+                        del agent
+    
+        
 
     def spawn_random_car(self):
         direction = random.choice(["down", "right"])
