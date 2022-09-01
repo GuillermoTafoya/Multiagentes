@@ -1,5 +1,6 @@
 #Aiuda
 
+from re import S
 from mesa import Agent
 
 class Car(Agent):
@@ -77,39 +78,41 @@ class Car(Agent):
                         self.stopped = True
                         self.next_pos = self.pos
                         return
-        # Move
-        if not self.stopped:
-            self.next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
+        self.stopped = False
+        self.next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
         
         
 
         
         
     def advance(self):
+        if self.stopped:
+            self.next_pos = self.pos
+            return
         neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
         
         
         for neighbour in neighbours:
             # Try stopping if there is another car in the way
             if isinstance(neighbour, Car):
-                if (self.direction == neighbour.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
-                    
+                if (self.direction == neighbour.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1 and neighbour.stopped:
                     if neighbour.pos[0] == self.pos[0]:
+                        self.stopped = True
                         self.next_pos = self.pos
                         return
-                elif (self.direction == neighbour.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1:
-                    
+                elif (self.direction == neighbour.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1 and neighbour.stopped:
                     if neighbour.pos[0] == self.pos[0]:
+                        self.stopped = True
                         self.next_pos = self.pos
                         return
-                elif (self.direction == neighbour.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1:
-                    
+                elif (self.direction == neighbour.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1 and neighbour.stopped:
                     if neighbour.pos[1] == self.pos[1]:
+                        self.stopped = True
                         self.next_pos = self.pos
                         return
-                elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
-                    
+                elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1 and neighbour.stopped:
                     if neighbour.pos[1] == self.pos[1]:
+                        self.stopped = True
                         self.next_pos = self.pos
                         return
                 
@@ -123,10 +126,16 @@ class Car(Agent):
                     return
 
         
-        self.stopped = False
-        if self.model.grid.out_of_bounds(self.next_pos):
+        
+        # Check if the car has reached the goal
+        if self.direction == 'down' and self.next_pos[1] == self.model.height - 1:
             self.successful_trip = True
-            return
+        elif self.direction == 'up' and self.next_pos[1] == 0:
+            self.successful_trip = True
+        elif self.direction == 'right' and self.next_pos[0] == self.model.width - 1:
+            self.successful_trip = True
+        elif self.direction == 'left' and self.next_pos[0] == 0:
+            self.successful_trip = True
         self.model.grid.move_agent(self, self.next_pos)
 
 class TrafficLight(Agent):
