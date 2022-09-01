@@ -88,7 +88,7 @@ class Board(Model):
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
                 if agent.successful_trip:
-                    self.successful_trips += 1
+                    self.successful_trips += 0.5 # 0.5 because it counts both cars
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
         
