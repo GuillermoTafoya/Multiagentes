@@ -100,7 +100,7 @@ class Car(Agent):
                 
                 
                 # Check collision with cars
-                if next_pos == neighbour.next_pos and neighbour is not self and neighbour.stopped == self.stopped == False and neighbour.internalclock == self.internalclock:
+                if next_pos == neighbour.pos and neighbour is not self and neighbour.stopped == self.stopped == False and neighbour.internalclock+1 == self.internalclock:
                     
                     self.alive = False
                     neighbour.alive = False
