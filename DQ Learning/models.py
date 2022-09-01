@@ -29,23 +29,19 @@ def get_grid(model):
             if isinstance(agent, Car):
                 json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}},'
                 if agent.colour == 'white':
-                    grid[x][y] = 6
+                    grid[x][y] = 2
                 elif agent.colour == 'blue':
-                    grid[x][y] = 7
+                    grid[x][y] = 3
             
             elif isinstance(agent, TrafficLight):
                 if agent.state == True: # Red
-                    grid[x][y] = 2
+                    grid[x][y] = 5
                 else: # Green
                     grid[x][y] = 1
 
             elif isinstance(agent, Road):
-                if agent.colour == "brown":
-                    grid[x][y] = 3
-                elif agent.colour == 'olive':
-                    grid[x][y] = 4
-                else: # dark green
-                    grid[x][y] = 5
+                # dark green
+                grid[x][y] = 4
             
             else: # Street
                 grid[x][y] = 0
@@ -79,43 +75,34 @@ class Board(Model):
         if self.schedule.steps % self.spawn_rate == 0:
             for _ in range(random.randint(1, self.max_spawn_batch)):
                 self.spawn_random_car()
+                
+        
+
         
         self.schedule.step()
-        self.datacollector.collect(self)
-        
-        # Check if there are cars that reached the destination
+
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
-
-                if agent.successful_trip:
-                    self.successful_trips += 1
+                if not agent.alive:
+                    self.crashes += 1
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
-                    del agent
-                    continue
-
-                neighbours = self.grid.get_neighbors(agent.pos, moore=False, include_center=False)
-                for neighbour in neighbours:
-                    if isinstance(neighbour, Car):
-                        # Check collision with cars
-                        if agent.next_pos == neighbour.next_pos and neighbour is not agent and neighbour.stopped == agent.stopped == False:
-                            self.crashes += 1
-                            self.schedule.remove(agent)
-                            self.grid.remove_agent(agent)
-                            
-                            self.schedule.remove(neighbour)
-                            self.grid.remove_agent(neighbour)
-                            
-                            del agent
-                            del neighbour
-                            break
+                if agent.successful_trip:
+                    self.successful_trips += 0.5 # 0.5 because it counts both cars
+                    self.schedule.remove(agent)
+                    self.grid.remove_agent(agent)
+        
+        
+        self.datacollector.collect(self)
+    
+        
 
     def spawn_random_car(self):
         direction = random.choice(["down", "right"])
         car = Car(self.carID, self, direction = direction, colour = 'white' if direction == 'down' else 'blue')
         self.carID += 1
-        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else 0
-        y = 0 if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
+        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else -1
+        y = -1 if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
         # Check if there is a car in the spawn position
         if self.grid.is_cell_empty((x, y)):
             self.grid.place_agent(car, (x, y))

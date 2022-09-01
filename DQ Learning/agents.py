@@ -1,3 +1,5 @@
+#Aiuda
+
 from mesa import Agent
 
 class Car(Agent):
@@ -51,17 +53,9 @@ class Car(Agent):
         """
         Defines how the model interacts within its environment.
         """
-        
-        # Check if the agent is alive
         if not self.alive:
             return
-        
-        # Move
-        next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
-        
-        
         neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
-        
         for neighbour in neighbours:
 
             if isinstance(neighbour, TrafficLight):
@@ -69,45 +63,71 @@ class Car(Agent):
                     # stop
                     if (self.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
                         self.stopped = True
+                        self.next_pos = self.pos
                         return
                     if (self.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1:
                         self.stopped = True
+                        self.next_pos = self.pos
                         return
                     if (self.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1:
                         self.stopped = True
+                        self.next_pos = self.pos
                         return
                     if (self.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
                         self.stopped = True
+                        self.next_pos = self.pos
                         return
+        # Move
+        if not self.stopped:
+            self.next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
+        
+        
+
+        
+        
+    def advance(self):
+        neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
+        
+        
+        for neighbour in neighbours:
             # Try stopping if there is another car in the way
             if isinstance(neighbour, Car):
                 if (self.direction == neighbour.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
+                    
                     if neighbour.pos[0] == self.pos[0]:
+                        self.next_pos = self.pos
                         return
                 elif (self.direction == neighbour.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1:
+                    
                     if neighbour.pos[0] == self.pos[0]:
+                        self.next_pos = self.pos
                         return
                 elif (self.direction == neighbour.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1:
+                    
                     if neighbour.pos[1] == self.pos[1]:
+                        self.next_pos = self.pos
                         return
                 elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
+                    
                     if neighbour.pos[1] == self.pos[1]:
+                        self.next_pos = self.pos
                         return
                 
-                """
+                
                 # Check collision with cars
-                if self.next_pos == neighbour.next_pos and neighbour is not self and neighbour.stopped == self.stopped == False:
+                if self.next_pos == neighbour.next_pos and neighbour is not self and self.direction != neighbour.direction and neighbour.stopped == self.stopped == False:
+                    
                     self.alive = False
                     neighbour.alive = False
+                    #self.next_pos = self.pos
                     return
-                """
+
         
         self.stopped = False
-        if self.model.grid.out_of_bounds(next_pos):
+        if self.model.grid.out_of_bounds(self.next_pos):
             self.successful_trip = True
             return
-        self.next_pos = next_pos
-        self.model.grid.move_agent(self, next_pos)
+        self.model.grid.move_agent(self, self.next_pos)
 
 class TrafficLight(Agent):
     """
@@ -137,6 +157,9 @@ class TrafficLight(Agent):
             if self.timeToChange == 0:
                 self.state = True
                 self.timeToChange = self._timeToChange
+
+    #def advance(self) -> None:
+        
         
 
 class Road(Agent):
