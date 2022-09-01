@@ -76,24 +76,26 @@ class Board(Model):
             for _ in range(random.randint(1, self.max_spawn_batch)):
                 self.spawn_random_car()
                 
-        
-
-        
+        self.datacollector.collect(self)
         self.schedule.step()
 
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
                 if not agent.alive:
-                    self.crashes += 1
+                    self.crashes += 0.5 # 0.5 because it counts both cars
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
+                    del agent
+                    continue
                 if agent.successful_trip:
-                    self.successful_trips += 0.5 # 0.5 because it counts both cars
+                    self.successful_trips += 1
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
+                    del agent
+                    continue
         
         
-        self.datacollector.collect(self)
+        
     
         
 
@@ -101,8 +103,8 @@ class Board(Model):
         direction = random.choice(["down", "right"])
         car = Car(self.carID, self, direction = direction, colour = 'white' if direction == 'down' else 'blue')
         self.carID += 1
-        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else -1
-        y = -1 if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
+        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else 0
+        y = 0 if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
         # Check if there is a car in the spawn position
         if self.grid.is_cell_empty((x, y)):
             self.grid.place_agent(car, (x, y))
