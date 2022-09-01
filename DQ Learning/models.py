@@ -29,23 +29,19 @@ def get_grid(model):
             if isinstance(agent, Car):
                 json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}},'
                 if agent.colour == 'white':
-                    grid[x][y] = 6
+                    grid[x][y] = 2
                 elif agent.colour == 'blue':
-                    grid[x][y] = 7
+                    grid[x][y] = 3
             
             elif isinstance(agent, TrafficLight):
                 if agent.state == True: # Red
-                    grid[x][y] = 2
+                    grid[x][y] = 5
                 else: # Green
                     grid[x][y] = 1
 
             elif isinstance(agent, Road):
-                if agent.colour == "brown":
-                    grid[x][y] = 3
-                elif agent.colour == 'olive':
-                    grid[x][y] = 4
-                else: # dark green
-                    grid[x][y] = 5
+                # dark green
+                grid[x][y] = 4
             
             else: # Street
                 grid[x][y] = 0
@@ -82,25 +78,22 @@ class Board(Model):
                 
         
 
-        self.schedule.step()
-        self.datacollector.collect(self)
         
-        # Check if there are cars that reached the destination
+        self.schedule.step()
+
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
-                                        
+                if not agent.alive:
+                    self.crashes += 1
+                    self.schedule.remove(agent)
+                    self.grid.remove_agent(agent)
                 if agent.successful_trip:
                     self.successful_trips += 1
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
-                    del agent
-                    continue
-                # Kill agents who are not alive
-                if not agent.alive:
-                        self.crashes += 1
-                        self.schedule.remove(agent)
-                        self.grid.remove_agent(agent)
-                        del agent
+        
+        
+        self.datacollector.collect(self)
     
         
 
