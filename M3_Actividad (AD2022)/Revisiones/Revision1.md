@@ -56,5 +56,29 @@ Lo anterior se hará mediante la implementación de alguna de los siguientes est
 Remplazar por correcto
 
 ### Diagrama de protocolos de interaccion
+- Diagrama de Carro
 ![Diagrama de protocolos de interaccion de los carros](../_Multimedia/Carro.jpeg)
-Remplazar por correcto
+- Diagrama de semaforo
+![Diagrama de protocolos de interaccion de los carros](../_Multimedia/Semaforo.jpeg)}
+
+## Plan de trabajo
+El plan de trabajo consiste principalmente en una metodología Agile (en este caso SCRUM) con sprints de una semana (debido a la limitante de tiempo) con 3 Sprints. Actualmente ya se comenzó con la investigación sobre cómo utilizar las herramientas que el framework Mesa nos brinda para poder establecer estas instrucciones de manera más sencilla así como la investigación sobre el manejo correcto de los atributos y modelación en Unity.
+
+Para los siguientes Sprints se espera:
+
+- Sprint 2
+  -  Modelación de Calles con atributos básicos
+  - Modelación de Carros con atributos básicos
+  - Modelación de Semáforos con atributos básicos
+  - Creación de clase carro con sus instrucciones propias
+  - Creación de clase semaforo con sus instrucciones propias
+  - Creación de clase sensor con sus instrucciones propias
+- Sprint 3
+  - Establecer el modelo en Unity con Spawn Points y colisiones
+  - Codificar interacciones entre las clases en Python
+- Sprint 4
+  - Interconexión entre Mesa y Unity
+  - Bug Hunting y casos de prueba
+
+## Aprendizajes adquiridos
+Durante estas dos semanas hemos aprendido lo básico de Mesa y Unity para poder hacer las simulaciones sin embargo estaremos investigando más al respecto para poder tratar de que cuadre nuestra expectativa del proyecto con nuestras capacidades actuales y futuras. Hemos aprendido sobre la creación de objetos en Unity así como la generación de spawn points (útil para cuando se utilicen los vehículos), mientras que en el lado de Mesa con Python nos enfocamos más en cómo se crean las clases y cómo hacer que los agentes interactúen entre ellos (con el ejemplo de la aspiradora), sin embargo consideramos que aún debemos seguir estudiando e investigando para estar a la altura del proyecto.
