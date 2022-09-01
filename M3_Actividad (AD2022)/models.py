@@ -29,24 +29,19 @@ def get_grid(model):
             if isinstance(agent, Car):
                 json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}},'
                 if agent.colour == 'white':
-                    grid[x][y] = 6
+                    grid[x][y] = 2
                 elif agent.colour == 'blue':
-                    grid[x][y] = 7
+                    grid[x][y] = 3
             
             elif isinstance(agent, TrafficLight):
-                json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state},"direction":"{agent.direction}"}},'
                 if agent.state == True: # Red
-                    grid[x][y] = 2
+                    grid[x][y] = 5
                 else: # Green
                     grid[x][y] = 1
 
             elif isinstance(agent, Road):
-                if agent.colour == "brown":
-                    grid[x][y] = 3
-                elif agent.colour == 'olive':
-                    grid[x][y] = 4
-                else: # dark green
-                    grid[x][y] = 5
+                # dark green
+                grid[x][y] = 4
             
             else: # Street
                 grid[x][y] = 0
@@ -58,7 +53,7 @@ def get_grid(model):
 
 
 class Board(Model):
-    def __init__(self, width, height, seed=None, spawn_rate = 1):
+    def __init__(self, width, height, seed=None, spawn_rate = 1, max_spawn_batch = 1):
         self.width = width
         self.height = height
         self.grid = MultiGrid(width, height, torus=False)
@@ -71,50 +66,45 @@ class Board(Model):
         self.spawn_rate = spawn_rate
         self.crashes = 0
         self.successful_trips = 0
+        self.max_spawn_batch = max_spawn_batch
         self.create_agents()
 
     
     def step(self):
         
         if self.schedule.steps % self.spawn_rate == 0:
-            self.spawn_random_car()
-
-        
-
-
+            for _ in range(random.randint(1, self.max_spawn_batch)):
+                self.spawn_random_car()
+                
         self.datacollector.collect(self)
         self.schedule.step()
-        
-        # Check if there are cars that crashed (are in the same cell)
-        for cell in self.grid.coord_iter():
-            cell_content, x, y = cell
-            # Count cars in cell
-            cars = sum([1 for agent in cell_content if isinstance(agent, Car)])
-            if cars > 1:
-                self.crashes += 1
-                # Kill all cars in cell
-                for agent in cell_content:
-                    if isinstance(agent, Car):
-                        agent.alive = False
-                        self.schedule.remove(agent)
-                        self.grid.remove_agent(agent)
-                        del agent
-        # Check if there are cars that reached the destination
+
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
+                if not agent.alive:
+                    self.crashes += 0.5 # 0.5 because it counts both cars
+                    self.schedule.remove(agent)
+                    self.grid.remove_agent(agent)
+                    del agent
+                    continue
                 if agent.successful_trip:
                     self.successful_trips += 1
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
                     del agent
-
+                    continue
+        
+        
+        
+    
+        
 
     def spawn_random_car(self):
         direction = random.choice(["down", "right"])
         car = Car(self.carID, self, direction = direction, colour = 'white' if direction == 'down' else 'blue')
         self.carID += 1
-        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else random.randint(0, 1)
-        y = random.randint(0, 1) if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
+        x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else 0
+        y = 0 if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
         # Check if there is a car in the spawn position
         if self.grid.is_cell_empty((x, y)):
             self.grid.place_agent(car, (x, y))
@@ -133,24 +123,6 @@ class Board(Model):
                     self.grid.place_agent(road, (x, y))
                     self.schedule.add(road)
 
-            """
-            # Create cars on the sides of the crossroad             
-            if CarsId < self.N:
-                # Cars going up
-                if x == 0 and abs(y - self.height // 2) < 2:
-                    #print("3. Added car at", x, y)
-                    car = Car(CarsId, self, direction = "right", colour = "white")
-                    self.grid.place_agent(car, (x, y))
-                    self.schedule.add(car)
-                    CarsId += 1
-                # Cars going down
-                elif abs(x - self.width // 2) < 2 and y == 0:
-                    #print("4. Added car at", x, y)
-                    car = Car(CarsId, self, direction = "up", colour = "blue")
-                    self.grid.place_agent(car, (x, y))
-                    self.schedule.add(car)
-                    CarsId += 1
-            """
         # Create traffic lights
         # Only two traffic lights, one from up to down and one from right to left
         trafficLight = TrafficLight(0, self, state=False, timeToChange=self.width, direction = "left", delay = self.height)
