@@ -87,7 +87,7 @@ class DQN_only_agent:
         self.criterion = torch.nn.MSELoss()#.to(self.device)
         self.opt = torch.optim.Adam(self.DQN.parameters(), lr=0.01)
         self.token = "O"
-
+#
     def get_epsilon(self, t):
         return max(self.epsilon_min, min(self.epsilon, 1.0 - math.log10((t + 1) * self.epsilon_decay)))
 

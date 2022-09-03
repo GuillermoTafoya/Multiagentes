@@ -51,16 +51,44 @@ def get_grid(model):
         file.write(json + "\n")
     return grid
 
+def get_grid_one_hot(model):
+    grid = np.zeros((model.grid.width, model.grid.height, 5))
+
+    #Por todas las celdas del grid
+    for cell in model.grid.coord_iter():
+        cell_content, x, y = cell        
+        for agent in cell_content:
+            # Save relevant agents to json
+            if isinstance(agent, Car):
+                if agent.colour == 'white':
+                    grid[x][y][2] = 1
+                elif agent.colour == 'blue':
+                    grid[x][y][3] = 1
+            
+            elif isinstance(agent, TrafficLight):
+                if agent.state == True: # Red
+                    grid[x][y][0] = 1
+                else: # Green
+                    grid[x][y][1] = 1
+
+            elif isinstance(agent, Road):
+                # dark green
+                grid[x][y][4] = 1
+            
+            else: # Street
+                pass
+    return grid
+
 
 class Board(Model):
-    def __init__(self, width, height, seed=None, spawn_rate = 1, max_spawn_batch = 1):
+    def __init__(self, width, height, seed=None, spawn_rate = 1, max_spawn_batch = 1, one_hot = False):
         self.width = width
         self.height = height
         self.grid = MultiGrid(width, height, torus=False)
         self.schedule = SimultaneousActivation(self)
         self.running = True
         self.datacollector = DataCollector(
-            model_reporters={"Grid": get_grid})
+            model_reporters={"Grid": get_grid_one_hot if one_hot else get_grid})
         random.seed(seed if seed is not None else time.time())
         self.carID = 2
         self.spawn_rate = spawn_rate
