@@ -26,16 +26,16 @@ class Car(Agent):
     def direction(self, direction):
         self._direction = direction
         if self._direction == 'up':
-            self.dx, self.dy = 0, -1
+            self.dx, self.dy = -1, 0
             return
         if self._direction == 'down':
-            self.dx, self.dy = 0, 1
+            self.dx, self.dy = 1, 0
             return
         if self._direction == 'right':
-            self.dx, self.dy = 1,0
+            self.dx, self.dy = 0, 1
             return
         if self._direction == 'left':
-            self.dx, self.dy = -1,0
+            self.dx, self.dy = 0, -1
             return
         raise(ValueError('Invalid direction'))
 
@@ -62,19 +62,19 @@ class Car(Agent):
             if isinstance(neighbour, TrafficLight):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
-                    if (self.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1:
+                    if (self.direction == 'down') and neighbour.pos[0] - self.pos[0] == 1:
                         self.stopped = True
                         self.next_pos = self.pos
                         return
-                    if (self.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1:
+                    if (self.direction == 'up') and self.pos[0] - neighbour.pos[0] == 1:
                         self.stopped = True
                         self.next_pos = self.pos
                         return
-                    if (self.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1:
+                    if (self.direction == 'right') and neighbour.pos[1] - self.pos[1] == 1:
                         self.stopped = True
                         self.next_pos = self.pos
                         return
-                    if (self.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1:
+                    if (self.direction == 'left') and self.pos[1] - neighbour.pos[1] == 1:
                         self.stopped = True
                         self.next_pos = self.pos
                         return
@@ -90,51 +90,42 @@ class Car(Agent):
             self.next_pos = self.pos
             return
         neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
-        
-        
         for neighbour in neighbours:
             # Try stopping if there is another car in the way
             if isinstance(neighbour, Car):
-                if (self.direction == neighbour.direction == 'down') and neighbour.pos[1] - self.pos[1] == 1 and neighbour.stopped:
-                    if neighbour.pos[0] == self.pos[0]:
-                        self.stopped = True
-                        self.next_pos = self.pos
-                        return
-                elif (self.direction == neighbour.direction == 'up') and self.pos[1] - neighbour.pos[1] == 1 and neighbour.stopped:
-                    if neighbour.pos[0] == self.pos[0]:
-                        self.stopped = True
-                        self.next_pos = self.pos
-                        return
-                elif (self.direction == neighbour.direction == 'right') and neighbour.pos[0] - self.pos[0] == 1 and neighbour.stopped:
+                if (self.direction == neighbour.direction == 'down') and neighbour.pos[0] - self.pos[0] == 1 and neighbour.stopped:
                     if neighbour.pos[1] == self.pos[1]:
                         self.stopped = True
                         self.next_pos = self.pos
                         return
-                elif (self.direction == neighbour.direction == 'left') and self.pos[0] - neighbour.pos[0] == 1 and neighbour.stopped:
+                elif (self.direction == neighbour.direction == 'up') and self.pos[0] - neighbour.pos[0] == 1 and neighbour.stopped:
                     if neighbour.pos[1] == self.pos[1]:
                         self.stopped = True
                         self.next_pos = self.pos
                         return
-                
-                
+                elif (self.direction == neighbour.direction == 'right') and neighbour.pos[1] - self.pos[1] == 1 and neighbour.stopped:
+                    if neighbour.pos[0] == self.pos[0]:
+                        self.stopped = True
+                        self.next_pos = self.pos
+                        return
+                elif (self.direction == neighbour.direction == 'left') and self.pos[1] - neighbour.pos[1] == 1 and neighbour.stopped:
+                    if neighbour.pos[0] == self.pos[0]:
+                        self.stopped = True
+                        self.next_pos = self.pos
+                        return
                 # Check collision with cars
                 if self.next_pos == neighbour.next_pos and neighbour is not self and self.direction != neighbour.direction and neighbour.stopped == self.stopped == False:
-                    
                     self.alive = False
                     neighbour.alive = False
-                    #self.next_pos = self.pos
                     return
-
-        
-        
         # Check if the car has reached the goal
-        if self.direction == 'down' and self.next_pos[1] == self.model.height - 1:
+        if self.direction == 'down' and self.next_pos[0] == self.model.width - 1:
             self.successful_trip = True
-        elif self.direction == 'up' and self.next_pos[1] == 0:
+        elif self.direction == 'up' and self.next_pos[0] == 0:
             self.successful_trip = True
-        elif self.direction == 'right' and self.next_pos[0] == self.model.width - 1:
+        elif self.direction == 'right' and self.next_pos[1] == self.model.height - 1:
             self.successful_trip = True
-        elif self.direction == 'left' and self.next_pos[0] == 0:
+        elif self.direction == 'left' and self.next_pos[1] == 0:
             self.successful_trip = True
         self.model.grid.move_agent(self, self.next_pos)
 
@@ -181,7 +172,7 @@ class Road(Agent):
     def step(self):
         pass
 
-import numpy as np
+"""import numpy as np
 import torch as torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -189,12 +180,12 @@ import torch.optim as optim
 import os
 from collections import deque
 import random
-import math
+import math"""
 
-class TrafficLightIA(Agent):
+"""class TrafficLightIA(Agent):
     """
-    Agent to be trained using DQ learning.
-    """
+    #Agent to be trained using DQ learning.
+"""
     class Linear_QNet(nn.Module):
         def __init__(self, input_size, output_size):
             super().__init__()
@@ -292,3 +283,4 @@ class TrafficLightIA(Agent):
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
     
+"""
