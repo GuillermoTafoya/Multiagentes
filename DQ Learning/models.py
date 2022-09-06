@@ -10,17 +10,11 @@ matplotlib.rcParams['animation.embed_limit'] = 2 ** 128
 import numpy as np
 import pandas as pd
 import time
-import datetime
 import random
-
 from agents import Car, TrafficLight, Road
-
-
 
 def get_grid(model):
     grid = np.zeros((model.grid.width, model.grid.height))
-
-    #Por todas las celdas del grid
     json = "{"
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
@@ -36,19 +30,14 @@ def get_grid(model):
                     grid[x][y] = 6
                 elif agent.direction == 'right':
                     grid[x][y] = 7
-            
             elif isinstance(agent, TrafficLight):
-                if agent.state == True: # Red
+                if agent.state == True:
                     grid[x][y] = 1
                 else:
-                    grid[x][y] = 2 # Green
-
+                    grid[x][y] = 2
             elif isinstance(agent, Road):
-                # dark green
                 grid[x][y] = 3
-            
-        if not cell_content: # Street
-            
+        if not cell_content:
             if model.grid.width//2 == x :
                 if (y+1)%2 == 0:
                     continue
@@ -59,7 +48,6 @@ def get_grid(model):
                     continue
                 if x < model.grid.width//3 or x > 2*model.grid.width//3:
                     grid[x][y] = 8
-
     json = json[:-1] + "}"
     # Append json to file
     with open("data.txt", "a") as file:
@@ -68,7 +56,6 @@ def get_grid(model):
 
 def get_grid_one_hot(model):
     grid = np.zeros((model.grid.width, model.grid.height, 5))
-
     #Por todas las celdas del grid
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
@@ -79,22 +66,16 @@ def get_grid_one_hot(model):
                     grid[x][y][2] = 1
                 elif agent.colour == 'blue':
                     grid[x][y][3] = 1
-            
             elif isinstance(agent, TrafficLight):
-                if agent.state == True: # Red
+                if agent.state == True:
                     grid[x][y][0] = 1
-                else: # Green
+                else:
                     grid[x][y][1] = 1
-
             elif isinstance(agent, Road):
-                # dark green
                 grid[x][y][4] = 1
-            
             else: # Street
                 pass
     return grid
-
-
 class Board(Model):
     def __init__(self, height, width, seed=None, spawn_rate = 1, max_spawn_batch = 1, one_hot = False):
         self.width = height
@@ -111,17 +92,13 @@ class Board(Model):
         self.successful_trips = 0
         self.max_spawn_batch = max_spawn_batch
         self.create_agents()
-
-    
     def step(self):
-        
         if self.schedule.steps % self.spawn_rate == 0:
             for _ in range(random.randint(1, self.max_spawn_batch)):
                 self.spawn_random_car()
                 
         self.datacollector.collect(self)
         self.schedule.step()
-
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
                 if not agent.alive:
@@ -136,12 +113,6 @@ class Board(Model):
                     self.grid.remove_agent(agent)
                     del agent
                     continue
-        
-        
-        
-    
-        
-
     def spawn_random_car(self):
         direction = random.choice(['left', 'right', 'up', 'down'])
         # Leave separation between lanes
@@ -157,45 +128,34 @@ class Board(Model):
         elif direction == 'up':
             y = random.randint(self.height // 3, self.height // 2 - 1)
             x = self.width - 1
-        
         car = Car(self.carID, self, direction = direction)
-        
-        
         self.carID += 1
-        #x = random.randint(self.width // 3, self.width * 2 // 3) if direction == "down" else 0
-        #y = 0 if direction == "down" else random.randint(self.height // 3, self.height * 2 // 3)
         # Check if there is a car in the spawn position
         if self.grid.is_cell_empty((x, y)):
             self.grid.place_agent(car, (x, y))
             self.schedule.add(car)
         else:
             del car
-
     def create_agents(self):
         # Create roads
         # Makes a crossroad
         for (_,x,y) in self.grid.coord_iter():
             if x < self.width // 3 or x > self.width // 3 * 2:
                 if y < self.height // 3 or y > self.height // 3 * 2:
-                #print("1. Added road at", x, y)
                     road = Road((x,y), self, colour = "olive")
                     self.grid.place_agent(road, (x, y))
                     self.schedule.add(road)
-
         # Create traffic lights
         # Four traffic lights, on the corners of the crossroad
         trafficLight = TrafficLight(0, self, state=False, timeToChange=self.height, direction = "up", delay = self.height)
         self.grid.place_agent(trafficLight, (self.width // 3 - 1, self.height // 3 * 2))
         self.schedule.add(trafficLight)
-
         trafficLight = TrafficLight(1, self, state=False, timeToChange=self.height, direction = "down", delay = self.width)
         self.grid.place_agent(trafficLight, (self.width // 3 * 2 + 1, self.height // 3))
         self.schedule.add(trafficLight)
-
         trafficLight = TrafficLight(2, self, state=True, timeToChange=self.width, direction = "right", delay = self.width)
         self.grid.place_agent(trafficLight, (self.width // 3 * 2, self.height // 3 * 2 + 1))
         self.schedule.add(trafficLight)
-
         trafficLight = TrafficLight(3, self, state=True, timeToChange=self.width, direction = "left", delay = self.width)
         self.grid.place_agent(trafficLight, (self.width // 3, self.height // 3 - 1))
         self.schedule.add(trafficLight)
