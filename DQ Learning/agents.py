@@ -1,11 +1,6 @@
-#Aiuda
-
-from re import S
 from mesa import Agent
-
 class Car(Agent):
     DIRECTIONS = ['right', 'down', 'left', 'up']
-
     def __init__(self, unique_id, model, colour=None, direction=None):
         super().__init__(unique_id, model)
         self.colour = colour
@@ -17,11 +12,9 @@ class Car(Agent):
         self.successful_trip = False
         self.stopped = False
         self.next_pos = unique_id
-
     @property
     def direction(self):
         return self._direction
-
     @direction.setter
     def direction(self, direction):
         self._direction = direction
@@ -38,7 +31,6 @@ class Car(Agent):
             self.dx, self.dy = 0, -1
             return
         raise(ValueError('Invalid direction'))
-
     def opositeDirections(self, direction1, direction2):
         if direction1 == 'up' and direction2 == 'down':
             return True
@@ -49,16 +41,11 @@ class Car(Agent):
         if direction1 == 'left' and direction2 == 'right':
             return True
         return False
-
     def step(self):
-        """
-        Defines how the model interacts within its environment.
-        """
         if not self.alive:
             return
         neighbours = self.model.grid.get_neighbors(self.pos, moore=False, include_center=True, radius=max(self.model.width, self.model.height))
         for neighbour in neighbours:
-
             if isinstance(neighbour, TrafficLight):
                 if neighbour.state == True and self.opositeDirections(neighbour.direction, self.direction):
                     # stop
@@ -80,11 +67,6 @@ class Car(Agent):
                         return
         self.stopped = False
         self.next_pos = (self.pos[0] + self.dx, self.pos[1] + self.dy)
-        
-        
-
-        
-        
     def advance(self):
         if self.stopped:
             self.next_pos = self.pos
@@ -128,11 +110,7 @@ class Car(Agent):
         elif self.direction == 'left' and self.next_pos[1] == 0:
             self.successful_trip = True
         self.model.grid.move_agent(self, self.next_pos)
-
 class TrafficLight(Agent):
-    """
-    Obstacle agent. Just to add obstacles to the grid.
-    """
     def __init__(self, unique_id, model, state = True, timeToChange = 10, direction = None, delay = 0):
         super().__init__(unique_id, model)
         self.state = state
@@ -141,7 +119,6 @@ class TrafficLight(Agent):
         self.direction = direction
         self._delay = delay
         self.delay = 0
-
     def step(self):
         if self.state and self.delay < self._delay:
             self.delay += 1
@@ -157,21 +134,13 @@ class TrafficLight(Agent):
             if self.timeToChange == 0:
                 self.state = True
                 self.timeToChange = self._timeToChange
-
-    #def advance(self) -> None:
-        
-        
-
 class Road(Agent):
-    """
-    Obstacle agent. Just to add obstacles to the grid.
-    """
     def __init__(self, unique_id, model, colour = None):
         super().__init__(unique_id, model)
         self.colour = colour if colour else "olive"
     def step(self):
         pass
-
+# To be implemented
 """import numpy as np
 import torch as torch
 import torch.nn as nn

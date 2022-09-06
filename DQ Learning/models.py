@@ -12,25 +12,33 @@ import pandas as pd
 import time
 import random
 from agents import Car, TrafficLight, Road
-
 def get_grid(model):
     grid = np.zeros((model.grid.width, model.grid.height))
-    json = "{"
+    verticalJson = "["
+    horizontalJson = "["
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
         for agent in cell_content:
             # Save relevant agents to json
             if isinstance(agent, Car):
-                json += f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}},'
+                
                 if agent.direction == 'up':
+                    verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 4
                 elif agent.direction == 'down':
+                    verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 5
                 elif agent.direction == 'left':
+                    horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 6
                 elif agent.direction == 'right':
+                    horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 7
             elif isinstance(agent, TrafficLight):
+                if agent.direction == 'up' or agent.direction == 'down':
+                    verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
+                else:
+                    horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
                 if agent.state == True:
                     grid[x][y] = 1
                 else:
@@ -48,10 +56,11 @@ def get_grid(model):
                     continue
                 if x < model.grid.width//3 or x > 2*model.grid.width//3:
                     grid[x][y] = 8
-    json = json[:-1] + "}"
+    verticalJson = verticalJson[:-1]+"]"
+    horizontalJson = horizontalJson[:-1]+"]"
     # Append json to file
     with open("data.txt", "a") as file:
-        file.write(json + "\n")
+        file.write(verticalJson + horizontalJson + "\n")
     return grid
 
 def get_grid_one_hot(model):
@@ -137,16 +146,12 @@ class Board(Model):
         else:
             del car
     def create_agents(self):
-        # Create roads
-        # Makes a crossroad
         for (_,x,y) in self.grid.coord_iter():
             if x < self.width // 3 or x > self.width // 3 * 2:
                 if y < self.height // 3 or y > self.height // 3 * 2:
                     road = Road((x,y), self, colour = "olive")
                     self.grid.place_agent(road, (x, y))
                     self.schedule.add(road)
-        # Create traffic lights
-        # Four traffic lights, on the corners of the crossroad
         trafficLight = TrafficLight(0, self, state=False, timeToChange=self.height, direction = "up", delay = self.height)
         self.grid.place_agent(trafficLight, (self.width // 3 - 1, self.height // 3 * 2))
         self.schedule.add(trafficLight)
@@ -159,11 +164,3 @@ class Board(Model):
         trafficLight = TrafficLight(3, self, state=True, timeToChange=self.width, direction = "left", delay = self.width)
         self.grid.place_agent(trafficLight, (self.width // 3, self.height // 3 - 1))
         self.schedule.add(trafficLight)
-
-if __name__ == '__main__':
-    # Test if the model works
-    board = Board(10, 10, 10)
-    for i in range(10):
-        board.step()
-        all = board.datacollector.get_model_vars_dataframe()
-        print(all.iloc[i]['Grid'])
