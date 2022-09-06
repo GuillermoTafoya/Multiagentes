@@ -4,7 +4,7 @@
 Narhari Olalde Guajardo ---- A01284077 <br/>
 Guillermo Tafoya Milo ------- A01633790 <br/>
 Mauricio Maqueo Huerta --- A01620649  <br/>
-Emilio Yolis Martinez ---- A01540484  <br/>
+Emilio Yolis Martinez -------- A01540484  <br/>
 
 ### Fortalezas y Areas de Oportunidad
 |   | Foretalezas  | Areas de Oportunidad  |
