@@ -14,8 +14,9 @@ import random
 from agents import Car, TrafficLight, Road
 def get_grid(model):
     grid = np.zeros((model.grid.width, model.grid.height))
-    verticalJson = "["
-    horizontalJson = "["
+    if model.write:
+        verticalJson = "["
+        horizontalJson = "["
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
         for agent in cell_content:
@@ -23,22 +24,27 @@ def get_grid(model):
             if isinstance(agent, Car):
                 
                 if agent.direction == 'up':
-                    verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
+                    if model.write:
+                        verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 4
                 elif agent.direction == 'down':
-                    verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
+                    if model.write:
+                        verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 5
                 elif agent.direction == 'left':
-                    horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
+                    if model.write:
+                        horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 6
                 elif agent.direction == 'right':
-                    horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
+                    if model.write:
+                        horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 7
             elif isinstance(agent, TrafficLight):
-                if agent.direction == 'up' or agent.direction == 'down':
-                    verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
-                else:
-                    horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
+                if model.write:
+                    if agent.direction == 'up' or agent.direction == 'down':
+                        verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
+                    else:
+                        horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
                 if agent.state == True:
                     grid[x][y] = 1
                 else:
@@ -56,39 +62,49 @@ def get_grid(model):
                     continue
                 if x < model.grid.width//3 or x > 2*model.grid.width//3:
                     grid[x][y] = 8
-    verticalJson = verticalJson[:-1]+"]"
-    horizontalJson = horizontalJson[:-1]+"]"
-    # Append json to file
-    with open("data.txt", "a") as file:
-        file.write(verticalJson + horizontalJson + "\n")
+    if model.write:
+        verticalJson = verticalJson[:-1]+"]"
+        horizontalJson = horizontalJson[:-1]+"]"
+        # Append json to file
+        with open("data.txt", "a") as file:
+            file.write(verticalJson + horizontalJson + "\n")
     return grid
 
 def get_grid_one_hot(model):
-    grid = np.zeros((model.grid.width, model.grid.height, 5))
-    #Por todas las celdas del grid
+    # Only account for cars and traffic lights
+    # Data needed for DQ learning:
+    #   - Car position
+    #   - Car direction
+    #   - Car is stopped
+    #   - Traffic light position
+    #   - Traffic light direction
+    #   - Traffic light state
+    grid = np.zeros((model.grid.width, model.grid.height, 6))
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
         for agent in cell_content:
-            # Save relevant agents to json
             if isinstance(agent, Car):
-                if agent.colour == 'white':
-                    grid[x][y][2] = 1
-                elif agent.colour == 'blue':
-                    grid[x][y][3] = 1
-            elif isinstance(agent, TrafficLight):
-                if agent.state == True:
+                if agent.direction == 'up':
                     grid[x][y][0] = 1
-                else:
+                elif agent.direction == 'down':
                     grid[x][y][1] = 1
-            elif isinstance(agent, Road):
-                grid[x][y][4] = 1
-            else: # Street
-                pass
+                elif agent.direction == 'left':
+                    grid[x][y][2] = 1
+                elif agent.direction == 'right':
+                    grid[x][y][3] = 1
+                if agent.stopped:
+                    grid[x][y][4] = 1
+            elif isinstance(agent, TrafficLight):
+                if agent.direction == 'up' or agent.direction == 'down':
+                    grid[x][y][5] = 1
+                else:
+                    grid[x][y][5] = 1
     return grid
 class Board(Model):
-    def __init__(self, height, width, seed=None, spawn_rate = 1, max_spawn_batch = 1, one_hot = False):
+    def __init__(self, height, width, seed=None, spawn_rate = 1, max_spawn_batch = 1, one_hot = False, write = False):
         self.width = height
         self.height = width
+        self.write = write
         self.grid = MultiGrid(height, width, torus=False)
         self.schedule = SimultaneousActivation(self)
         self.running = True
@@ -99,6 +115,7 @@ class Board(Model):
         self.spawn_rate = spawn_rate
         self.crashes = 0
         self.successful_trips = 0
+        self.time_stuck = 0
         self.max_spawn_batch = max_spawn_batch
         self.create_agents()
     def step(self):
@@ -121,6 +138,9 @@ class Board(Model):
                     self.schedule.remove(agent)
                     self.grid.remove_agent(agent)
                     del agent
+                    continue
+                if agent.stopped:
+                    self.time_stuck += 1
                     continue
     def spawn_random_car(self):
         direction = random.choice(['left', 'right', 'up', 'down'])
