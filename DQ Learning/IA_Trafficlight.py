@@ -1,3 +1,4 @@
+from turtle import forward
 import numpy as np
 import torch as torch
 import torch.nn as nn
@@ -8,60 +9,39 @@ from collections import deque
 import random
 import math
 from models import Board
+from agents import Agent
 
+# To be implemented
+class TrafficLightIA(Agent):
+    """
+    #Agent to be trained using DQ learning.
+    """
+    class Q_Net(nn.Module):
+        def __init__(self, input_size, output_size):
+            super().__init__()
+            # Process a 31x31x11 grid (11 channels)
+            self.fc1 = nn.Linear(input_size, 128)
+            self.fc2 = nn.Linear(128, 128)
+            # Return a 1x4 array with the Q values for the 4 trafficLights(the action is switching, for the 4 traffic lights)
+            # After the convolution, the output should be a 1x4
+            self.fc3 = nn.Linear(128, output_size)
 
-class Linear_QNet(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
-        super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, output_size)
+        def forward(self, x):
+            x = F.relu(self.fc1(x))
+            x = F.relu(self.fc2(x))
+            x = self.fc3(x)
+            return x
 
-    def forward(self, x):
-        x = F.relu(self.linear1(x))
-        x = self.linear2(x)
-        return x
+        def save(self, path):
+            torch.save(self.state_dict(), path)
 
-    def save(self, file_name='model_name.pth'):
-        model_folder_path = 'Path'
-        file_name = os.path.join(model_folder_path, file_name)
-        torch.save(self.state_dict(), file_name)
-
-"""
-class DQN(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.fc1 = nn.Linear(9, 24)
-        self.fc2 = nn.Linear(24, 48)
-        self.fc3 = nn.Linear(48, 9)
-
-    def forward(self, x):        
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        x = F.relu(x)
-        x = self.fc3(x)
-        return x
-"""
-# Get state from environment, of the traffic lights
-def get_state(self, game, agent):
-    pos = agent.pos
-    state = [
-        
-
-
-
-    
-    ]
-    return np.array(state, dtype=int)
-
-class DQN_only_agent:
-    def __init__(self, n_episodes=1000, n_wins_objective=195, max_env_steps=None, gamma=1.0, epsilon=1.0,
+    def __init__(self, unique_id, model, n_episodes=1000, n_wins_objective=195, max_env_steps=None, gamma=1.0, epsilon=1.0,
                     epsilon_min=0.01, epsilon_log_decay=0.995, alpha=0.01, alpha_decay=0.01, 
                     batch_size=64, quiet=False, saveweights=True):
-        
+        super().__init__(unique_id, model)
         self.memory = deque(maxlen=100000)
         
-        self.env = Board()
+        self.env = model
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_min = epsilon_min
@@ -74,64 +54,31 @@ class DQN_only_agent:
         self.quiet = quiet
         self.saveweights=saveweights
         if max_env_steps is not None: self.env._max_episode_steps = max_env_steps
-
-        # Init model
-        #self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        self.DQN = DQN()#.to(self.device)
-        try:
-            self.DQN.load_state_dict(torch.load("trained2win.pth"))
-            self.DQN.eval()
-        except:
-            print("Not loaded")
         
-        self.criterion = torch.nn.MSELoss()#.to(self.device)
-        self.opt = torch.optim.Adam(self.DQN.parameters(), lr=0.01)
-        self.token = "O"
-#
+        self.state = False
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.DQN = self.Q_Net(11*31*31, 4).to(self.device)
+    
     def get_epsilon(self, t):
         return max(self.epsilon_min, min(self.epsilon, 1.0 - math.log10((t + 1) * self.epsilon_decay)))
 
-    def preprocess_state(self, state):
-        s = [[0]*3 for i in range(3)] #############################
-        for row in range(3):
-            for col in range(3):
-                if state[row][col] == self.token:
-                    s[row][col] = 1
-                elif state[row][col] == " ":
-                    continue
-                else:
-                    s[row][col] = -1
-                
-        return torch.tensor(np.reshape(s, [1, 9]), dtype=torch.float32)#.to(self.device)
-    
-    def getMove(self, state, epsilon = 1000):
-        possible_moves = []
-        for cell in range(len(state[0])):
-            if state[0][cell] == 0:
-                possible_moves.append(cell)
-        #print("Possible Moves:",possible_moves)
-        if not possible_moves:
-            return (-1,1)
+    def getMoves(self, state, epsilon = 1000):
+        """
+        Return the Q values for each action (on or off for the 4 traffic lights)
+        """
         if (np.random.random() <= epsilon):
-            #print("Random Play")
- 
-            n = random.choice(possible_moves)
-            return (n//3,n%3) 
-
-                
+            # Select a random action
+            return np.random.randint(0, 2, size=4)
         else:
             with torch.no_grad():
-                #print("DQ Play")
-                prediction = torch.topk(self.DQN(state),9) ### !!!.cpu()
-                preferedMoves = prediction[1].numpy()
-
-                for n in preferedMoves[0]:
-                    if int(n) in possible_moves:
-                        return (n//3,n%3) if possible_moves else (-1,1)
-  
+                prediction = self.DQN(state)
+                # We return all the Q values, and each agent will choose if it switches or not
+                # depending on its corresponding Q value
+                # Return an array of 0s and 1s, 1 if the agent switches, 0 if it doesn't
+                return prediction.cpu().numpy()
 
     def remember(self, state, action, reward, next_state, done, e): ###
-        reward = torch.tensor(reward)#.to(self.device)
+        reward = torch.tensor(reward).to(self.device)
         self.memory.append((state, action, reward, next_state, done, e))
     
     def replay(self, batch_size):
@@ -142,122 +89,57 @@ class DQN_only_agent:
             y = self.DQN(state)
             y_target = y.clone().detach()
             with torch.no_grad():
-                #print("Trying:",self.DQN(next_state)[0])
-                #print("Debug:",self.getMove(next_state, self.get_epsilon(e)))
-                r,c = self.getMove(next_state, self.get_epsilon(e))
-                ac = r*3+c
-                #print("Action:",ac)
-                y_target[0][action] = reward if (done or ac<0) else reward + self.gamma * self.DQN(next_state)[0][ac] ###
-                
-            y_batch.append(y[0])
-            y_target_batch.append(y_target[0])
-        
+                switches = self.getMove(next_state, self.get_epsilon(e))
+                # We get the Q values for the next state
+                y_target_next = self.DQN(next_state)
+                # We get the Q value for the action that was taken
+                Q_next = y_target_next[switches]
+                # We get the Q value for the action that was taken
+                Q_next = Q_next.max(1)[0].view(1, 1)
+                # If the episode is done, we don't add the Q value of the next state
+                if done:
+                    y_target[0][action] = reward
+                else:
+                    y_target[0][action] = reward + self.gamma * Q_next
+            y_batch.append(y)
+            y_target_batch.append(y_target)
         y_batch = torch.cat(y_batch)
         y_target_batch = torch.cat(y_target_batch)
-        
-        self.opt.zero_grad()
+        loss = F.mse_loss(y_batch, y_target_batch)
+        self.DQN.zero_grad()
         loss = self.criterion(y_batch, y_target_batch)
         loss.backward()
         self.opt.step()        
-        
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-    # Training against random agent
-    def run(self):
-        try:
-            enemy = AI_agent(DQN,True,"trained2win.pth")
-        except:
-            enemy = randomAgent()#
-        
-        
-        scores = []
-        wins = []
-        p1wr = []
+    def train(self):
+        """
+        Train the agent using DQ learning.
+        """
+        scores = deque(maxlen=100)
         for e in range(self.n_episodes):
-            
+            state = self.env.reset()
+            state = torch.tensor(state).to(self.device)
+            state = torch.reshape(state, (1, 11, 31, 31))
+            score = 0
             done = False
-            firstPlayer = np.random.choice((True,False))
-            self.token = "O" if firstPlayer else "X"
-            
-            try:
-                enemy.token = "O" if not firstPlayer else "X"  ###!!!
-            except:
-                pass
-            
-            i = 0
-            
-            state = self.preprocess_state(self.env.reset())
-            #print("Playing as",self.token,", player", 1 if firstPlayer else 2)
-            while not self.env.gameOver:
-
-                
-                if self.env.firstPlayerTurn:
-                    #Your turn / Enemy turn
-                    row, col = self.getMove(state, self.get_epsilon(e)) if firstPlayer else enemy.getMove(self.env)
-                else:
-                    #Enemy turn
-                    row, col = enemy.getMove(self.env) if firstPlayer else self.getMove(state, self.get_epsilon(e))
-                        
-
-                self.env.makeMove(row, col) 
-                #self.env.displayBoard()
-                self.env.checkForWinner()
-                
-                
-                
-                next_state = self.env.board
-                next_state = self.preprocess_state(next_state)
-                
-                if self.env.firstPlayerTurn == firstPlayer:
-                    action =  row*3+col
-                    reward = reward_function(self.env, self.token)
-                    #print("Reward:",reward)
-                    #print("I tried to play on:",action)
-                    self.remember(state, action, reward, next_state, self.env.gameOver,e) ###
-                else:
-                    if self.env.gameOver:
-                        reward = reward_function(self.env, self.token)
-                        #print("Reward:",reward)
-                        state, action, _ , next_state, done, e = self.memory[-1]
-                        self.memory.pop()
-                        self.memory.append((state, action, reward, next_state, done, e))
-                    #print("Is first players turn:",self.env.firstPlayerTurn)
-                    #print("I am first player:",firstPlayer)
-
-                self.env.firstPlayerTurn = not self.env.firstPlayerTurn
+            while not done:
+                switches = self.getMoves(state, self.get_epsilon(e))
+                next_state, reward, done, _ = self.env.step(switches)
+                next_state = torch.tensor(next_state).to(self.device)
+                next_state = torch.reshape(next_state, (1, 11, 31, 31))
+                self.remember(state, switches, reward, next_state, done, e)
                 state = next_state
-                i += 1
-
-            scores.append(int(self.env.firstPlayerWon == firstPlayer) if not self.env.draw else 2)
-            """if firstPlayer:
-                played_as_p1_agent1 += 1
-                p1wr.append(int(self.env.firstPlayerWon == firstPlayer) if not self.env.draw else 2)
-            else:
-                played_as_p1_agent2 += 1
-                p1wr.append(int(self.env.firstPlayerWon == firstPlayer) if not self.env.draw else 2)"""
-            wins.append(int(self.env.firstPlayerWon) if not self.env.draw else 2)
-            rate = scores.count(1)/len(scores)
-            if rate >= self.n_wins_objective and e >= 100:
+                score += reward
+            scores.append(score)
+            mean_score = np.mean(scores)
+            if mean_score >= self.n_wins_objective and e >= 100:
                 if not self.quiet: print('Ran {} episodes. Solved after {} trials ✔'.format(e, e - 100))
-                return e - 100
-            if (e+1) % (500) == 0 and e>0:
-                splot(scores,size=(6,6),txt="Win rates Agent1 vs Agent2 after ["+ str(e+1) + "] iters.",
-                     agent1 = "Agent 1",agent2="Agent 2")
-                
-                """splot(p1wr,size=(6,6),txt="Win rates as player1 after ["+ str(e+1) + "] iters.",
-                     agent1 = "Agent 1",agent2="Agent 2")"""
-                
-                #plot(wins,txt = "P1 vs P2 after ["+ str(e+1) + "] iters.")
-                
-                # Save the trained model
-                torch.save(self.DQN.state_dict(), "checkpoint.pth")
-                
-                enemy = AI_agent(DQN,True,"checkpoint.pth") #####!!!!
-                scores = []
-                wins = []
-
+                if self.saveweights: torch.save(self.DQN.state_dict(), 'DQN.pth')
+                break
+            if e % 100 == 0 and not self.quiet:
+                print('[Episode {}] - Mean survival time over last 100 episodes was {} ticks.'.format(e, mean_score))
             self.replay(self.batch_size)
-        # Save the trained model
-        if self.saveweights:
-            torch.save(self.DQN.state_dict(), "trained2win.pth")
+            self.Q_Net.save(self.DQN, 'DQN.pth')
+        if not self.quiet: print('Did not solve after {} episodes 😞'.format(e))
         return e
