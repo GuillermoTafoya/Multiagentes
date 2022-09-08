@@ -74,12 +74,16 @@ def get_grid_one_hot(model):
     # Only account for cars and traffic lights
     # Data needed for DQ learning:
     #   - Car position
-    #   - Car direction
+    #   - Car direction (4 directions)
     #   - Car is stopped
     #   - Traffic light position
-    #   - Traffic light direction
-    #   - Traffic light state
-    grid = np.zeros((model.grid.width, model.grid.height, 6))
+    #   - Traffic light direction (4 directions)
+    #   - Traffic light state (2 states)
+    #
+    # Only take in account cells that do not have a road (usable space)
+    # Parse it to the 4 lanes (up, down, left, right)
+    #   - Each lane is a 2D array with the 11 hot encoded values
+    grid = np.zeros((model.grid.width, model.grid.height, 11))
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
         for agent in cell_content:
@@ -95,10 +99,18 @@ def get_grid_one_hot(model):
                 if agent.stopped:
                     grid[x][y][4] = 1
             elif isinstance(agent, TrafficLight):
-                if agent.direction == 'up' or agent.direction == 'down':
+                if agent.direction == 'up':
                     grid[x][y][5] = 1
+                elif agent.direction == 'down':
+                    grid[x][y][6] = 1
+                elif agent.direction == 'left':
+                    grid[x][y][7] = 1
+                elif agent.direction == 'right':
+                    grid[x][y][8] = 1
+                if agent.state:
+                    grid[x][y][9] = 1
                 else:
-                    grid[x][y][5] = 1
+                    grid[x][y][10] = 1
     return grid
 class Board(Model):
     def __init__(self, height, width, seed=None, spawn_rate = 1, max_spawn_batch = 1, one_hot = False, write = False):
