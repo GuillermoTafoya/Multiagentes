@@ -16,36 +16,27 @@ from agents_AI import Car, TrafficLight, Road
 def get_grid(model):
     grid = np.zeros((model.grid.width, model.grid.height))
     if model.write:
-        verticalJson = "["
-        horizontalJson = "["
+        stepJson = "\n{"
+        carsJson = "\"cars\": [\n"
+        trafficLightsJson = "\"trafficLights\": [\n"
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell        
         for agent in cell_content:
             # Save relevant agents to json
             if isinstance(agent, Car):
-                
+                if model.write:
+                    carsJson += "{\"id\":" + str(agent.unique_id) + ",\n\t\"x\":" + str(x) + ",\n\t\"y\":" + str(y) + ",\n\t\"direction\":\"" + agent.direction + "\"\n\t},\n"
                 if agent.direction == 'up':
-                    if model.write:
-                        verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 4
                 elif agent.direction == 'down':
-                    if model.write:
-                        verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 5
                 elif agent.direction == 'left':
-                    if model.write:
-                        horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 6
                 elif agent.direction == 'right':
-                    if model.write:
-                        horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"speed":{agent.dx,agent.dy},"direction":"{agent.direction}"}}'+'},'
                     grid[x][y] = 7
             elif isinstance(agent, TrafficLight):
                 if model.write:
-                    if agent.direction == 'up' or agent.direction == 'down':
-                        verticalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
-                    else:
-                        horizontalJson += '{'+f'"{agent.unique_id}":{{"x":{x},"y":{y},"state":"{agent.state}","direction":"{agent.direction}"}}'+'},'
+                    trafficLightsJson += "{\"id\":" + str(agent.unique_id) + ",\n\t\"x\":" + str(x) + ",\n\t\"y\":" + str(y) + ",\n\t\"direction\":\"" + agent.direction + "\",\n\t\"state\":" + str(agent.state).lower() + "\n\t},\n"
                 if agent.state == True:
                     grid[x][y] = 1
                 else:
@@ -64,11 +55,12 @@ def get_grid(model):
                 if x < model.grid.width//3 or x > 2*model.grid.width//3:
                     grid[x][y] = 8
     if model.write:
-        verticalJson = verticalJson[:-1]+"]"
-        horizontalJson = horizontalJson[:-1]+"]"
+        carsJson = carsJson[:-2] + "\n],\n"
+        trafficLightsJson = trafficLightsJson[:-2] + "\n]"
+        stepJson += carsJson + trafficLightsJson + "\n},"
         # Append json to file
-        with open("data.txt", "a") as file:
-            file.write(verticalJson + horizontalJson + "\n")
+        with open("data.json", "a") as file:
+            file.write(stepJson)
     return grid
 
 def get_grid_one_hot(model):
