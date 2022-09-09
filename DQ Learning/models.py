@@ -132,6 +132,9 @@ class Board(Model):
         self.time_stuck = 0
         self.carID = 4
         self.schedule = SimultaneousActivation(self)
+        self.datacollector = DataCollector(
+            model_reporters={"Grid": get_grid_one_hot if one_hot else get_grid
+            })
         # Clean cars
         for agent in self.schedule.agents:
             if isinstance(agent, Car):

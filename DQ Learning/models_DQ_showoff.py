@@ -125,7 +125,8 @@ class Board(Model):
         self.actionTranslator = list(product([True, False], repeat=4))
         self.targetSuccessfulTrips = targetSuccessfulTrips
         self.datacollector = DataCollector(
-            model_reporters={"Grid": get_grid})
+                model_reporters={"Grid": get_grid
+                })
         random.seed(seed if seed is not None else time.time())
         self.carID = 4
         self.spawn_rate = spawn_rate
@@ -141,6 +142,9 @@ class Board(Model):
         self.carID = 4
         self.schedule = SimultaneousActivation(self)
         self.schedule.steps = 0
+        self.datacollector = DataCollector(
+                model_reporters={"Grid": get_grid
+                })
         # Clean cars
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
@@ -151,7 +155,7 @@ class Board(Model):
         """
         Reward function for DQ learning
         """
-        return self.successful_trips*30 - self.crashes*100 - self.time_stuck*2
+        return self.successful_trips*30 - self.crashes*100 - self.time_stuck*10
     def step(self,traffic_light_decisions:int):
         if self.schedule.steps % self.spawn_rate == 0:
             for _ in range(random.randint(1, self.max_spawn_batch)):
@@ -160,6 +164,7 @@ class Board(Model):
         # First, decide if we want to change the traffic light (the action is switching)
         id = 0
         actionsTaken = self.actionTranslator[traffic_light_decisions]
+        self.datacollector.collect(self)
         self.schedule.step()
         for agent in self.schedule.agents:
             if isinstance(agent, TrafficLight) and agent.unique_id == id:

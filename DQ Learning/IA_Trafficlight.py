@@ -7,7 +7,6 @@ import os
 from collections import deque
 import random
 import math
-# To be implemented
 class TrafficLightIA():
     """
     # Agent IA to be trained using DQ learning.
