@@ -106,6 +106,7 @@ class TrafficLightIA():
         Train the agent using DQ learning.
         """
         scores = deque(maxlen=100)
+        maxSteps = 200
         for e in range(self.n_episodes):
             state = self.env.reset()
             state = torch.tensor(state).to(self.device)
@@ -121,18 +122,20 @@ class TrafficLightIA():
             while not done:
                 action,wasRandom = self.getMoves(state, self.get_epsilon(e))
                 # Give time so the cars can move
-                for _ in range(4): 
+                for _ in range(10): 
                     next_state, reward, done, _ = self.env.step(action)
                 next_state = torch.tensor(next_state).to(self.device)
                 next_state = next_state.view(1,11*31*31)
                 next_state = next_state.float()
-                if steps % 50 == 0:
+                if steps % 20 == 0:
                     print(f'[{e}] [{steps}]',"Action: ", action, "| Reward: ", reward, "| Was random action:", wasRandom)
                     print("Successful Trips:", self.env.successful_trips, "| Crashes:", self.env.crashes)
                 self.remember(state, action, reward, next_state, done, e)
                 state = next_state
                 score += reward
                 steps += 1
+                if steps > maxSteps:
+                    break
             scores.append(score)
             mean_score = np.mean(scores)
             if mean_score >= self.n_wins_objective and e >= 100:

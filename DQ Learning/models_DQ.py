@@ -140,6 +140,7 @@ class Board(Model):
         self.time_stuck = 0
         self.carID = 4
         self.schedule = SimultaneousActivation(self)
+        self.schedule.steps = 0
         # Clean cars
         for agent in self.schedule.agents:
             if isinstance(agent, Car):
