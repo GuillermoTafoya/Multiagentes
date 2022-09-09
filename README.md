@@ -51,9 +51,6 @@ Lo anterior se hará mediante la implementación de alguna de los siguientes est
 - Calles
 
 ## Diagramas
-### Diagrama de clases
-![Diagrama de clases](https://i.imgur.com/0Z7ZQ9M.png)
-Remplazar por correcto
 
 ### Diagrama de protocolos de interaccion
 - Diagrama de Carro
