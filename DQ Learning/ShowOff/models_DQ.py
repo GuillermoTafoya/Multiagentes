@@ -149,7 +149,7 @@ class Board(Model):
         """
         Reward function for DQ learning, more like a penalty function...
         """
-        return -(self.crashes*100 + self.time_stuck)
+        return -(self.crashes*100 + self.time_stuck*15)
     def step(self,traffic_light_decisions:int):
         if self.schedule.steps % self.spawn_rate == 0:
             for _ in range(random.randint(1, self.max_spawn_batch)):

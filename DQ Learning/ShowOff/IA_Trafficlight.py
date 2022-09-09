@@ -16,7 +16,7 @@ class TrafficLightIA():
         def __init__(self, input_size, output_size):
             super().__init__()
             # Process a 31x31x11 grid (11 channels)
-            # It is resized to 1x31x31x11
+            # It is resized to 1x(31x31x11)
             self.fc1 = nn.Linear(input_size, 256)
             self.fc2 = nn.Linear(256, 256)
             # Return an array with the Q values for the 4 trafficLights(each action represents a different permutation of the traffic lights)
