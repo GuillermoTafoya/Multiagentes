@@ -80,21 +80,6 @@ Para los siguientes Sprints se espera:
   - Interconexión entre Mesa y Unity
   - Bug Hunting y casos de prueba
 
-## Modelacion del sistema de multiagentes necesario para simular una intersección controlada por señales de "Alto"
-INSERTAR CODIGO
-
-## Codigo
-### Implemento de Agentes
-INSERTAR CODIGO
-
-### Implementacion Unity
-INSERTAR CODIGO
-
-## Resultados
-INSERTAR RESULTADOS
-
-## Limitaciones
-INSERTAR LIMITACIONES
 
 ## Conclusiones
 En conclusión, el diseño de una solución al problema de movilidad urbana en México, mediante un enfoque que reduzca la congestión vehicular al simular de manera gráfica el tráfico, representando la salida de un sistema multi agentes en Python es completamente lograble tal y como se demostró anteriormente. Esto podría fácilmente trasladarse a otras áreas al haber creado una herramienta de facil uso asi como adptarlo a otras situaciones similares.
