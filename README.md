@@ -8,7 +8,7 @@
 Narhari Olalde Guajardo ---- A01284077 <br/>
 Guillermo Tafoya Milo ------- A01633790 <br/>
 Mauricio Maqueo Huerta --- A01620649  <br/>
-Emilio Yolis Martinez -------- A01540484  <br/>
+Emilio Yoltic Martinez -------- A01540484  <br/>
 
 ### Fortalezas y Areas de Oportunidad
 |   | Foretalezas  | Areas de Oportunidad  |
@@ -16,7 +16,7 @@ Emilio Yolis Martinez -------- A01540484  <br/>
 |  Guillermo Tafoya Milo   | Rapido Aprendizaje <br/> Energetico <br/> Experiencia previa en el area                | Distraccion facil <br/> Procrastinacion <br/> Comunicacion efectiva  |
 |  Narhari Olalde Guajardo |  Experiencia previa en el area <br/> Formacion profesional <br/> Pensamiento analítico | Manejo de tiempo <br/> Definir la linea entre trabajo, educacion y tiempo libre <br/> Concentracion |
 |  Mauricio Maqueo Huerta  | Inteligencia emocional <br/> Perseverancia <br/> Proactividad                          |Toma de decisiones <br/>Procrastinacion <br/> Manejo de Tiempo |
-| Emilio Yoltis Martinez |  Resiliente <br/> Creativo <br/> Disciplinado                                          | Paciencia <br/> Empatia <br/> Manejo de Estres |
+| Emilio Yoltic Martinez |  Resiliente <br/> Creativo <br/> Disciplinado                                          | Paciencia <br/> Empatia <br/> Manejo de Estres |
 
 ### Expectativas del equipo
 - Aprender sobre inteligtencia artificial
