@@ -3,6 +3,8 @@
 |  Algorithmic Solution  | DQ Learning |
 |-----------|--------|
 |![](https://github.com/GuillermoTafoya/Multiagentes/blob/master/DQ%20Learning/ShowOff/IMGS/notIA.gif)|![](https://github.com/GuillermoTafoya/Multiagentes/blob/master/DQ%20Learning/ShowOff/IMGS/IA.gif)|
+## GH
+![Repo](https://github.com/GuillermoTafoya/Multiagentes)
 ## Equipo
 ### Integrantes
 Narhari Olalde Guajardo ---- A01284077 <br/>
