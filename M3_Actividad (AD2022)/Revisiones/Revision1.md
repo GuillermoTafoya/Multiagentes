@@ -1,16 +1,10 @@
-# Reporte Final
-## Funcionamiento
-|  Algorithmic Solution  | DQ Learning |
-|-----------|--------|
-|![](https://github.com/GuillermoTafoya/Multiagentes/blob/master/DQ%20Learning/ShowOff/IMGS/notIA.gif)|![](https://github.com/GuillermoTafoya/Multiagentes/blob/master/DQ%20Learning/ShowOff/IMGS/IA.gif)|
-## GH
-![Repo](https://github.com/GuillermoTafoya/Multiagentes)
+# Revision 1
 ## Equipo
 ### Integrantes
 Narhari Olalde Guajardo ---- A01284077 <br/>
 Guillermo Tafoya Milo ------- A01633790 <br/>
 Mauricio Maqueo Huerta --- A01620649  <br/>
-Emilio Yoltic Martinez -------- A01540484  <br/>
+Emiliano Yoltic Martinez ---- A01620000  <br/>
 
 ### Fortalezas y Areas de Oportunidad
 |   | Foretalezas  | Areas de Oportunidad  |
@@ -18,7 +12,7 @@ Emilio Yoltic Martinez -------- A01540484  <br/>
 |  Guillermo Tafoya Milo   | Rapido Aprendizaje <br/> Energetico <br/> Experiencia previa en el area                | Distraccion facil <br/> Procrastinacion <br/> Comunicacion efectiva  |
 |  Narhari Olalde Guajardo |  Experiencia previa en el area <br/> Formacion profesional <br/> Pensamiento analítico | Manejo de tiempo <br/> Definir la linea entre trabajo, educacion y tiempo libre <br/> Concentracion |
 |  Mauricio Maqueo Huerta  | Inteligencia emocional <br/> Perseverancia <br/> Proactividad                          |Toma de decisiones <br/>Procrastinacion <br/> Manejo de Tiempo |
-| Emilio Yoltic Martinez |  Resiliente <br/> Creativo <br/> Disciplinado                                          | Paciencia <br/> Empatia <br/> Manejo de Estres |
+| Emiliano Yoltic Martinez |  Resiliente <br/> Creativo <br/> Disciplinado                                          | Paciencia <br/> Empatia <br/> Manejo de Estres |
 
 ### Expectativas del equipo
 - Aprender sobre inteligtencia artificial
@@ -57,12 +51,15 @@ Lo anterior se hará mediante la implementación de alguna de los siguientes est
 - Calles
 
 ## Diagramas
+### Diagrama de clases
+![Diagrama de clases](https://i.imgur.com/0Z7ZQ9M.png)
+Remplazar por correcto
 
 ### Diagrama de protocolos de interaccion
 - Diagrama de Carro
-![Diagrama de protocolos de interaccion de los carros](/M3_Actividad%20(AD2022)/_Multimedia/Carro.jpeg)
+![Diagrama de protocolos de interaccion de los carros](../_Multimedia/Carro.jpeg)
 - Diagrama de semaforo
-![Diagrama de protocolos de interaccion de los Semaforos](/M3_Actividad%20(AD2022)/_Multimedia/Semaforo.jpeg)}
+![Diagrama de protocolos de interaccion de los carros](../_Multimedia/Semaforo.jpeg)}
 
 ## Plan de trabajo
 El plan de trabajo consiste principalmente en una metodología Agile (en este caso SCRUM) con sprints de una semana (debido a la limitante de tiempo) con 3 Sprints. Actualmente ya se comenzó con la investigación sobre cómo utilizar las herramientas que el framework Mesa nos brinda para poder establecer estas instrucciones de manera más sencilla así como la investigación sobre el manejo correcto de los atributos y modelación en Unity.
@@ -83,8 +80,5 @@ Para los siguientes Sprints se espera:
   - Interconexión entre Mesa y Unity
   - Bug Hunting y casos de prueba
 
-
-## Conclusiones
-En conclusión, el diseño de una solución al problema de movilidad urbana en México, mediante un enfoque que reduzca la congestión vehicular al simular de manera gráfica el tráfico, representando la salida de un sistema multi agentes en Python es completamente lograble tal y como se demostró anteriormente. Esto podría fácilmente trasladarse a otras áreas al haber creado una herramienta de facil uso asi como adptarlo a otras situaciones similares.
-
-En este proyecto se logró aprender sobre el uso y manejo del Framwwork mesa asi como poder relacionar la simulacion obtenida por mesa con Unity mediante un archivo .JSON para llegar a la solución final. Asimismo logramos reforzar el trabajo en equipo al tratar de no repartir el proyecto por partes, sino adoptar un nuevo enfoque en el trabajo de equipo, en el cual nos juntábamos cada dos dias para tratar de resolver la situación problema asi como implementar un sistema de SCRUM para tratar de agilizar el desarollo del proyecto. Lo anterior enfocado en un desarrollo más integral así como poder avanzar más rápido y de una manera más efectiva, logrando así un mejor resultado final.
+## Aprendizajes adquiridos
+Durante estas dos semanas hemos aprendido lo básico de Mesa y Unity para poder hacer las simulaciones sin embargo estaremos investigando más al respecto para poder tratar de que cuadre nuestra expectativa del proyecto con nuestras capacidades actuales y futuras. Hemos aprendido sobre la creación de objetos en Unity así como la generación de spawn points (útil para cuando se utilicen los vehículos), mientras que en el lado de Mesa con Python nos enfocamos más en cómo se crean las clases y cómo hacer que los agentes interactúen entre ellos (con el ejemplo de la aspiradora), sin embargo consideramos que aún debemos seguir estudiando e investigando para estar a la altura del proyecto.
