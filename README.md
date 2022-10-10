@@ -12,25 +12,6 @@ Guillermo Tafoya Milo ------- A01633790 <br/>
 Mauricio Maqueo Huerta --- A01620649  <br/>
 Emilio Yoltic Martinez -------- A01540484  <br/>
 
-### Fortalezas y Areas de Oportunidad
-|   | Foretalezas  | Areas de Oportunidad  |
-|--------------------------|----------------------------------------------------------------------------------------|---|
-|  Guillermo Tafoya Milo   | Rapido Aprendizaje <br/> Energetico <br/> Experiencia previa en el area                | Distraccion facil <br/> Procrastinacion <br/> Comunicacion efectiva  |
-|  Narhari Olalde Guajardo |  Experiencia previa en el area <br/> Formacion profesional <br/> Pensamiento analítico | Manejo de tiempo <br/> Definir la linea entre trabajo, educacion y tiempo libre <br/> Concentracion |
-|  Mauricio Maqueo Huerta  | Inteligencia emocional <br/> Perseverancia <br/> Proactividad                          |Toma de decisiones <br/>Procrastinacion <br/> Manejo de Tiempo |
-| Emilio Yoltic Martinez |  Resiliente <br/> Creativo <br/> Disciplinado                                          | Paciencia <br/> Empatia <br/> Manejo de Estres |
-
-### Expectativas del equipo
-- Aprender sobre inteligtencia artificial
-- Aprender sobre el desarrollo de software
-- Aprender sobre simulaciones
-- Aprender sobre desarrollo de assets
-
-### Objetivos -> Compromisos
-- Aprender sobre inteligencia artificial -> Lectura de libros, videos, tutoriales, etc.
-- Comprension del framework -> Lectura de documentacion y hands on learning
-- Relacion entre python y unity -> Video tutoriales, cursos de Udemy, etc.
-
 ## Introduccion
 En la sociedad actual,la movilidad urbana juega un papel vital en la vida cotidiana y abarca todos los sectores, desde el sector social hasta el industrial y médico, siendo este un tema que ha cobrado gran relevancia en las últimas décadas debido al mayor uso de automóviles y menor uso de los servicios de transporte público, esto más comúnmente representados en las metrópolis. Ejemplo de lo anterior ha sido el incremento en el uso de automóviles en México.
 
